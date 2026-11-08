@@ -4,7 +4,7 @@
  * even inside walk-in coolers without reception or when the PC is turned off.
  */
 
-const CACHE_NAME = "kitchen-os-v3-cloud-v1";
+const CACHE_NAME = "kitchen-os-v3-cloud-v2";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -92,3 +92,4 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+

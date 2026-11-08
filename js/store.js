@@ -8,7 +8,7 @@ import { SyncService } from "./services/syncService.js";
 import { InventoryService } from "./services/inventoryService.js";
 import { CalculationService } from "./services/calculationService.js";
 
-const STATE_STORAGE_KEY = "kitchen_os_v3_state";
+const STATE_STORAGE_KEY = "kitchen_os_v3_state_clean_v2";
 
 class KitchenStore {
   constructor() {
@@ -120,9 +120,18 @@ class KitchenStore {
         this.notify();
       }
 
-      resetToDefaults() {
-        this.state = JSON.parse(JSON.stringify(INITIAL_DATA));
+      async resetToDefaults() {
+        const cleanBase = {
+          ...JSON.parse(JSON.stringify(INITIAL_DATA)),
+          logCounts: [],
+          logWaste: [],
+          logDeliveries: [],
+          logLabor: [],
+          logLaborDaily: []
+        };
+        this.state = cleanBase;
         this.saveState();
+        await this.hydrateFromServer(true);
         SyncService.enqueue("STATE_RESET", { timestamp: new Date().toISOString() });
       }
 

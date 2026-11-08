@@ -129,7 +129,7 @@ export const SyncService = {
 
     let stateToSend = currentState;
     if (!stateToSend && typeof localStorage !== "undefined") {
-      const rawState = localStorage.getItem("kitchen_os_v3_state");
+      const rawState = localStorage.getItem("kitchen_os_v3_state_clean_v2");
       if (rawState) stateToSend = JSON.parse(rawState);
     }
 

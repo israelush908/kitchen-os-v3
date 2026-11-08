@@ -97,6 +97,7 @@ function pullFullState() {
   var wasteRows = getSheetValues(ss, "LOG_Waste");
   var dailyLaborRows = getSheetValues(ss, "OPS_Daily_Labor");
   var deliveriesRows = getSheetValues(ss, "LOG_Deliveries");
+  var ordersRows = getSheetValues(ss, "LOG_Orders");
 
   var config = {
     kitchenName: "מרכז מבקרים יקב בוטיק",
@@ -135,7 +136,9 @@ function pullFullState() {
         contactName: cleanText(r[3]),
         whatsappPhone: cleanText(r[4]),
         deliveryDays: daysList,
-        isActive: r[6] === false ? false : true
+        isActive: r[6] === false ? false : true,
+        orderChannel: cleanText(r[7]) || "WHATSAPP",
+        portalUrl: cleanText(r[10]) || ""
       });
       supplierNameToId[supName] = supId;
     }
@@ -368,6 +371,27 @@ function pullFullState() {
     });
   }
 
+  var logOrders = [];
+  for (var ordIdx = 0; ordIdx < ordersRows.length; ordIdx++) {
+    var ordR = ordersRows[ordIdx];
+    if (!cleanText(ordR[0])) continue;
+    var ordItems = [];
+    try { ordItems = JSON.parse(cleanText(ordR[8]) || "[]"); } catch (e) {}
+    var ordSupName = cleanText(ordR[2]);
+    logOrders.push({
+      id: cleanText(ordR[0]),
+      timestamp: cleanText(ordR[1]),
+      supplierId: supplierNameToId[ordSupName] || "",
+      supplierName: ordSupName,
+      orderChannel: cleanText(ordR[3]) || "WHATSAPP",
+      externalOrderRef: cleanText(ordR[4]),
+      orderedBy: cleanText(ordR[5]) || "ישראל",
+      estimatedTotalExclVat: toNum(ordR[6], 0),
+      status: cleanText(ordR[7]) || "ORDERED",
+      items: ordItems
+    });
+  }
+
   return {
     config: config,
     suppliers: suppliers,
@@ -380,6 +404,7 @@ function pullFullState() {
     logWaste: logWaste,
     logLabor: logLabor,
     logLaborDaily: logLaborDaily,
+    logOrders: logOrders,
     logDeliveries: logDeliveries
   };
 }
@@ -411,6 +436,24 @@ function pushStateToSheets(state, actions) {
       shWaste.getRange(nextWRow, 1, 1, 4).setValues([[wDt, p.reporter || "ישראל", p.itemName || "", Number(p.wasteQty || 0)]]);
       shWaste.getRange(nextWRow, 6, 1, 1).setValues([[p.wasteReason || "פג תוקף / קלקול"]]);
       shWaste.getRange(nextWRow, 9, 1, 1).setValues([[p.notes || ""]]);
+    } else if (type === "ORDER_RECORDED") {
+      var shOrd = ss.getSheetByName("LOG_Orders");
+      if (!shOrd) {
+        shOrd = ss.insertSheet("LOG_Orders");
+        shOrd.setRightToLeft(true);
+        shOrd.appendRow(["מזהה הזמנה", "תאריך", "ספק", "ערוץ הזמנה", "אסמכתא חיצונית", 'הוזמן ע"י', 'סכום משוער ללא מע"מ', "סטטוס", "פירוט JSON"]);
+      }
+      shOrd.appendRow([
+        p.id || "",
+        String(p.timestamp || "").slice(0, 16).replace("T", " "),
+        p.supplierName || "",
+        p.orderChannel || "WHATSAPP",
+        p.externalOrderRef || "",
+        p.orderedBy || "ישראל",
+        Number(p.estimatedTotalExclVat || 0),
+        p.status || "ORDERED",
+        JSON.stringify(p.items || [])
+      ]);
     } else if (type === "DELIVERY_RECORDED") {
       var shDel = ss.getSheetByName("LOG_Deliveries");
       if (!shDel) {

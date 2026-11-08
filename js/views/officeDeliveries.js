@@ -6,7 +6,7 @@
 import { store } from "../store.js";
 import { CalculationService } from "../services/calculationService.js";
 
-let activeSubView = "NEW_DELIVERY"; // NEW_DELIVERY | HISTORY
+let activeSubView = "NEW_DELIVERY"; // NEW_DELIVERY | OPEN_ORDERS | HISTORY
 let selectedSupplierId = "";
 let invoiceNum = "";
 let receivedBy = "ישראל";
@@ -20,6 +20,8 @@ export function renderOfficeDeliveries(container) {
   const suppliers = state.suppliers.filter(s => s.isActive);
   const catalog = state.catalog.filter(c => c.isActive);
   const deliveries = state.logDeliveries || [];
+  const orders = state.logOrders || [];
+  const openOrders = orders.filter(o => o.status === "ORDERED");
 
   if (!selectedSupplierId && suppliers.length > 0) {
     selectedSupplierId = suppliers[0].id;
@@ -74,14 +76,26 @@ export function renderOfficeDeliveries(container) {
           <button class="filter-pill ${activeSubView === 'NEW_DELIVERY' ? 'active' : ''}" id="btnTabNewDelivery">
             📥 קליטת משלוח חדש
           </button>
+          <button class="filter-pill ${activeSubView === 'OPEN_ORDERS' ? 'active' : ''}" id="btnTabOpenOrders">
+            📋 יומן הזמנות רכש (פתוחות: ${openOrders.length} / סה"כ: ${orders.length})
+          </button>
           <button class="filter-pill ${activeSubView === 'HISTORY' ? 'active' : ''}" id="btnTabDeliveryHistory">
             📜 היסטוריית תעודות משלוח (${totalDeliveriesCount})
           </button>
         </div>
       </div>
 
-      <!-- 3 כרטיסי מדדי רכש -->
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+      <!-- 4 כרטיסי מדדי רכש -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-title">הזמנות רכש פתוחות (בדרך)</span>
+            <span class="kpi-icon">🚚</span>
+          </div>
+          <div class="kpi-value" style="color: ${openOrders.length > 0 ? '#1D4ED8' : 'inherit'};">${openOrders.length}</div>
+          <div class="kpi-footer">מתוך ${orders.length} הזמנות שתועדו (וואטסאפ/פורטל)</div>
+        </div>
+
         <div class="kpi-card">
           <div class="kpi-card-header">
             <span class="kpi-title">סך תעודות משלוח שנקלטו</span>
@@ -110,7 +124,11 @@ export function renderOfficeDeliveries(container) {
         </div>
       </div>
 
-      ${activeSubView === "NEW_DELIVERY" ? renderNewDeliverySection(suppliers, currentSupplier, supplierItems, draftTotalExclVat, draftActiveLinesCount, state.config.vatRate) : renderDeliveryHistorySection(deliveries, suppliers)}
+      ${activeSubView === "NEW_DELIVERY"
+        ? renderNewDeliverySection(suppliers, currentSupplier, supplierItems, draftTotalExclVat, draftActiveLinesCount, state.config.vatRate, openOrders)
+        : (activeSubView === "OPEN_ORDERS"
+            ? renderOrdersLogSection(orders, suppliers)
+            : renderDeliveryHistorySection(deliveries, suppliers))}
     </div>
   `;
 
@@ -120,23 +138,48 @@ export function renderOfficeDeliveries(container) {
     renderOfficeDeliveries(container);
   });
 
+  container.querySelector("#btnTabOpenOrders")?.addEventListener("click", () => {
+    activeSubView = "OPEN_ORDERS";
+    renderOfficeDeliveries(container);
+  });
+
   container.querySelector("#btnTabDeliveryHistory")?.addEventListener("click", () => {
     activeSubView = "HISTORY";
     renderOfficeDeliveries(container);
   });
 
   if (activeSubView === "NEW_DELIVERY") {
-    bindNewDeliveryEvents(container, supplierItems);
+    bindNewDeliveryEvents(container, supplierItems, openOrders);
+  } else if (activeSubView === "OPEN_ORDERS") {
+    bindOrdersLogEvents(container, orders, catalog);
   } else {
     bindHistoryEvents(container, deliveries);
   }
 }
 
-function renderNewDeliverySection(suppliers, currentSupplier, supplierItems, draftTotalExclVat, draftActiveLinesCount, vatRate = 0.18) {
+function renderNewDeliverySection(suppliers, currentSupplier, supplierItems, draftTotalExclVat, draftActiveLinesCount, vatRate = 0.18, openOrders = []) {
   const draftTotalInclVat = draftTotalExclVat * (1 + (Number(vatRate) || 0.18));
+  const openOrderForCurrent = openOrders.find(o => o.supplierId === currentSupplier?.id);
 
   return `
     <div class="card">
+      ${openOrderForCurrent ? `
+        <div style="background: #EFF6FF; border: 1.5px solid #1D4ED8; border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: var(--space-md); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 700; color: #1E3A8A; font-size: 14px;">
+              📦 נמצאה הזמנת רכש פתוחה עבור ${currentSupplier.name} (${(openOrderForCurrent.items || []).length} פריטים שהוזמנו)
+            </div>
+            <div style="font-size: 12px; color: #1E40AF; margin-top: 2px;">
+              ערוץ הזמנה: <strong>${openOrderForCurrent.orderChannel === 'EXTERNAL_PORTAL' ? 'מערכת הזמנות ספק' : 'וואטסאפ'}</strong>
+              ${openOrderForCurrent.externalOrderRef ? ` • מס׳ אסמכתא/הזמנה: <strong>${openOrderForCurrent.externalOrderRef}</strong>` : ''}
+              • תאריך הזמנה: ${formatTimestamp(openOrderForCurrent.timestamp)}
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" id="btnLoadOpenOrderToDelivery" style="background: #1D4ED8;">
+            📥 טען כמויות מההזמנה הפתוחה
+          </button>
+        </div>
+      ` : ''}
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); border-bottom: 1px solid var(--color-border-subtle); padding-bottom: var(--space-sm);">
         <div>
           <h3 class="card-title" style="font-size: 16px;">📥 טופס קליטת תעודת משלוח מספק</h3>
@@ -387,7 +430,7 @@ function renderDeliveryHistorySection(deliveries, suppliers) {
   `;
 }
 
-function bindNewDeliveryEvents(container, supplierItems) {
+function bindNewDeliveryEvents(container, supplierItems, openOrders = []) {
   const supplierSelect = container.querySelector("#deliverySupplierSelect");
   if (supplierSelect) {
     supplierSelect.addEventListener("change", (e) => {
@@ -395,6 +438,23 @@ function bindNewDeliveryEvents(container, supplierItems) {
       renderOfficeDeliveries(container);
     });
   }
+
+  container.querySelector("#btnLoadOpenOrderToDelivery")?.addEventListener("click", () => {
+    const openOrd = openOrders.find(o => o.supplierId === selectedSupplierId);
+    if (!openOrd) return;
+    supplierItems.forEach(item => {
+      const ordLine = (openOrd.items || []).find(l => l.itemId === item.id);
+      lineInputs[item.id] = {
+        receivedQty: ordLine ? Number(ordLine.orderedQty) || 0 : 0,
+        newUnitCost: Number(ordLine?.unitCostSnapshot ?? item.unitCostExclVat) || 0,
+        updateCatalogPrice: true
+      };
+    });
+    if (openOrd.externalOrderRef && !invoiceNum) {
+      invoiceNum = openOrd.externalOrderRef;
+    }
+    renderOfficeDeliveries(container);
+  });
 
   container.querySelector("#deliveryInvoiceInput")?.addEventListener("input", (e) => {
     invoiceNum = e.target.value;
@@ -559,6 +619,121 @@ function bindHistoryEvents(container, deliveries) {
 
       if (confirm(`האם לבטל את תעודת המשלוח "${dlv.invoiceNumber || dlv.id}" מאת ${dlv.supplierName} ולגרוע חזרה את הכמויות מהמלאי?`)) {
         store.deleteDeliveryLog(id, true);
+        renderOfficeDeliveries(container);
+      }
+    });
+  });
+}
+
+function renderOrdersLogSection(orders, suppliers) {
+  return `
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+        <div>
+          <h3 class="card-title" style="font-size: 16px; margin-bottom: 2px;">📋 יומן הזמנות רכש שיצאו לספקים (וואטסאפ + פורטלים חיצוניים)</h3>
+          <p class="card-subtitle">מעקב מלא אחר הזמנות שממתינות לאספקה והזמנות שכבר נקלטו במלאי</p>
+        </div>
+      </div>
+
+      ${orders.length === 0 ? `
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <div class="empty-state-title">טרם תועדו הזמנות רכש</div>
+          <div class="empty-state-desc">הזמנות שתשלח בוואטסאפ או תתעד ממערכת ספק חיצונית יופיעו כאן אוטומטית</div>
+        </div>
+      ` : `
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>מזהה הזמנה</th>
+                <th>תאריך ושעה</th>
+                <th>ספק</th>
+                <th>ערוץ הזמנה</th>
+                <th>אסמכתא / הזמנת ספק</th>
+                <th>פירוט פריטים שהוזמנו</th>
+                <th>סכום משוער (ללא מע"מ)</th>
+                <th>סטטוס</th>
+                <th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${orders.map(ord => {
+                const isReceived = ord.status === "RECEIVED";
+                const channelLabel = ord.orderChannel === "EXTERNAL_PORTAL"
+                  ? "🌐 מערכת ספק"
+                  : (ord.orderChannel === "PHONE" ? "📞 טלפון/סוכן" : "💬 וואטסאפ");
+                const itemsBadges = (ord.items || []).map(i =>
+                  `<span class="badge badge-gray" style="margin-left: 4px; margin-bottom: 3px;">
+                    ${i.itemName}: ${i.orderedQty} ${i.unit || ''}
+                  </span>`
+                ).join('');
+
+                return `
+                  <tr>
+                    <td class="mono" style="font-size: 11px; color: var(--color-text-dim);">${ord.id}</td>
+                    <td style="font-size: 12px;">${formatTimestamp(ord.timestamp)}</td>
+                    <td><strong>${ord.supplierName}</strong></td>
+                    <td><span class="badge ${ord.orderChannel === 'EXTERNAL_PORTAL' ? 'badge-warning' : 'badge-gray'}">${channelLabel}</span></td>
+                    <td class="mono">${ord.externalOrderRef || '—'}</td>
+                    <td style="max-width: 340px;">${itemsBadges}</td>
+                    <td class="mono" style="font-weight: 700;">₪${Number(ord.estimatedTotalExclVat || 0).toFixed(2)}</td>
+                    <td>
+                      <span class="badge ${isReceived ? 'badge-success' : 'badge-warning'}">
+                        ${isReceived ? `✅ נקלט במלאי (${ord.invoiceNumber || ''})` : '🚚 הוזמן - ממתין לאספקה'}
+                      </span>
+                    </td>
+                    <td>
+                      <div style="display: flex; gap: 4px;">
+                        ${!isReceived ? `
+                          <button class="btn btn-primary btn-convert-order-to-dlv" data-id="${ord.id}" style="min-height: 28px; padding: 2px 8px; font-size: 11px;">
+                            📥 קלוט סחורה
+                          </button>
+                        ` : ''}
+                        <button class="btn btn-danger btn-delete-order-log" data-id="${ord.id}" style="min-height: 28px; padding: 2px 8px; font-size: 11px;">
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+function bindOrdersLogEvents(container, orders, catalog) {
+  container.querySelectorAll(".btn-convert-order-to-dlv").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const ordId = btn.dataset.id;
+      const ord = orders.find(o => o.id === ordId);
+      if (!ord) return;
+
+      selectedSupplierId = ord.supplierId;
+      const supItems = catalog.filter(c => c.supplierId === selectedSupplierId);
+      supItems.forEach(item => {
+        const ordLine = (ord.items || []).find(l => l.itemId === item.id);
+        lineInputs[item.id] = {
+          receivedQty: ordLine ? Number(ordLine.orderedQty) || 0 : 0,
+          newUnitCost: Number(ordLine?.unitCostSnapshot ?? item.unitCostExclVat) || 0,
+          updateCatalogPrice: true
+        };
+      });
+      if (ord.externalOrderRef) invoiceNum = ord.externalOrderRef;
+      activeSubView = "NEW_DELIVERY";
+      renderOfficeDeliveries(container);
+    });
+  });
+
+  container.querySelectorAll(".btn-delete-order-log").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const ordId = btn.dataset.id;
+      if (confirm("האם למחוק הזמנת רכש זו מהיומן?")) {
+        store.deleteOrderLog(ordId);
         renderOfficeDeliveries(container);
       }
     });

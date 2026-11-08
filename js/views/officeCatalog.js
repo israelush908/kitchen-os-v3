@@ -136,38 +136,51 @@ export function renderOfficeCatalog(container) {
                 <th>מזהה</th>
                 <th>שם ספק</th>
                 <th>תחום ראשי</th>
+                <th>ערוץ הזמנה (שיטת רכש)</th>
                 <th>איש קשר</th>
-                <th>טלפון לוואטסאפ</th>
+                <th>טלפון / פורטל ספק</th>
                 <th>ימי חלוקה ואספקה</th>
                 <th>פעיל</th>
                 <th style="width: 60px;">פעולות</th>
               </tr>
             </thead>
             <tbody>
-              ${filteredSuppliers.map(sup => `
-                <tr>
-                  <td class="mono" style="font-size: 11px; color: var(--color-text-dim);">${sup.id}</td>
-                  <td><strong>${sup.name}</strong></td>
-                  <td>${sup.category}</td>
-                  <td>${sup.contactName || '—'}</td>
-                  <td class="mono" dir="ltr" style="text-align: right;">${sup.whatsappPhone}</td>
-                  <td>
-                    <div style="display: flex; gap: 3px; flex-wrap: wrap;">
-                      ${(sup.deliveryDays || []).map(d => `<span class="badge badge-gray" style="font-size: 10px;">${d}</span>`).join('')}
-                    </div>
-                  </td>
-                  <td>
-                    <span class="badge ${sup.isActive ? 'badge-success' : 'badge-danger'}">
-                      ${sup.isActive ? 'פעיל' : 'לא פעיל'}
-                    </span>
-                  </td>
-                  <td>
-                    <button class="btn btn-secondary btn-edit-sup" data-id="${sup.id}" style="min-height: 28px; padding: 2px 8px; font-size: 11px;">
-                      ✏️ ערוך
-                    </button>
-                  </td>
-                </tr>
-              `).join('')}
+              ${filteredSuppliers.map(sup => {
+                const isPortal = sup.orderChannel === "EXTERNAL_PORTAL";
+                const isPhone = sup.orderChannel === "PHONE";
+                return `
+                  <tr>
+                    <td class="mono" style="font-size: 11px; color: var(--color-text-dim);">${sup.id}</td>
+                    <td><strong>${sup.name}</strong></td>
+                    <td>${sup.category}</td>
+                    <td>
+                      <span class="badge ${isPortal ? 'badge-warning' : (isPhone ? 'badge-gray' : 'badge-success')}">
+                        ${isPortal ? '🌐 מערכת הזמנות ספק' : (isPhone ? '📞 טלפון / סוכן' : '💬 וואטסאפ ישיר')}
+                      </span>
+                    </td>
+                    <td>${sup.contactName || '—'}</td>
+                    <td class="mono" dir="ltr" style="text-align: right;">
+                      <div>${sup.whatsappPhone || '—'}</div>
+                      ${sup.portalUrl ? `<a href="${sup.portalUrl}" target="_blank" style="font-size: 11px; color: var(--color-accent-primary);">🔗 קישור לפורטל</a>` : ''}
+                    </td>
+                    <td>
+                      <div style="display: flex; gap: 3px; flex-wrap: wrap;">
+                        ${(sup.deliveryDays || []).map(d => `<span class="badge badge-gray" style="font-size: 10px;">${d}</span>`).join('')}
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge ${sup.isActive ? 'badge-success' : 'badge-danger'}">
+                        ${sup.isActive ? 'פעיל' : 'לא פעיל'}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-secondary btn-edit-sup" data-id="${sup.id}" style="min-height: 28px; padding: 2px 8px; font-size: 11px;">
+                        ✏️ ערוך
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
             </tbody>
           </table>
         </div>
@@ -241,9 +254,15 @@ function showItemModal(item, container) {
       </div>
       <form id="itemForm">
         <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label">שם חומר הגלם</label>
-            <input type="text" class="form-input" id="modalItemName" value="${item ? item.name : ''}" required />
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
+            <div class="form-group">
+              <label class="form-label">שם חומר הגלם</label>
+              <input type="text" class="form-input" id="modalItemName" value="${item ? item.name : ''}" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">מק"ט אצל הספק (אופציונלי, להזמנה בפורטל)</label>
+              <input type="text" class="form-input mono" id="modalItemSupplierSku" placeholder="למשל: 729001..." value="${item && item.supplierSku ? item.supplierSku : ''}" />
+            </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
@@ -310,6 +329,7 @@ function showItemModal(item, container) {
     store.saveCatalogItem({
       ...(item || {}),
       name: modal.querySelector("#modalItemName").value,
+      supplierSku: modal.querySelector("#modalItemSupplierSku")?.value?.trim() || "",
       category: modal.querySelector("#modalItemCat").value,
       supplierId: modal.querySelector("#modalItemSupplier").value,
       stockUnit: modal.querySelector("#modalItemUnit").value,
@@ -354,9 +374,24 @@ function showSupplierModal(supplier, container) {
             </div>
           </div>
 
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
+            <div class="form-group">
+              <label class="form-label">ערוץ הזמנה מועדף מול הספק</label>
+              <select class="form-select" id="modalSupChannel">
+                <option value="WHATSAPP" ${(!supplier || !supplier.orderChannel || supplier.orderChannel === 'WHATSAPP') ? 'selected' : ''}>💬 שליחה ישירה בוואטסאפ</option>
+                <option value="EXTERNAL_PORTAL" ${supplier && supplier.orderChannel === 'EXTERNAL_PORTAL' ? 'selected' : ''}>🌐 מערכת הזמנות חיצונית של הספק (פורטל/אפליקציה)</option>
+                <option value="PHONE" ${supplier && supplier.orderChannel === 'PHONE' ? 'selected' : ''}>📞 הזמנה טלפונית / סוכן שטח</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">טלפון וואטסאפ / איש קשר (למשל 972504008601)</label>
+              <input type="text" class="form-input" id="modalSupPhone" value="${supplier ? supplier.whatsappPhone : '972'}" />
+            </div>
+          </div>
+
           <div class="form-group">
-            <label class="form-label">טלפון וואטסאפ (ללא +, למשל 972504008601)</label>
-            <input type="text" class="form-input" id="modalSupPhone" value="${supplier ? supplier.whatsappPhone : '972'}" required />
+            <label class="form-label">קישור לפורטל ההזמנות של הספק (אופציונלי, לספקים עם אתר הזמנות)</label>
+            <input type="url" class="form-input mono" id="modalSupPortalUrl" placeholder="https://orders.supplier.co.il..." value="${supplier && supplier.portalUrl ? supplier.portalUrl : ''}" />
           </div>
         </div>
         <div class="modal-footer">
@@ -377,6 +412,8 @@ function showSupplierModal(supplier, container) {
       name: modal.querySelector("#modalSupName").value,
       category: modal.querySelector("#modalSupCategory").value,
       contactName: modal.querySelector("#modalSupContact").value,
+      orderChannel: modal.querySelector("#modalSupChannel").value,
+      portalUrl: modal.querySelector("#modalSupPortalUrl").value.trim(),
       whatsappPhone: modal.querySelector("#modalSupPhone").value.replace(/\D/g, "")
     });
     modal.remove();

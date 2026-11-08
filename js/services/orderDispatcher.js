@@ -1,5 +1,5 @@
 /**
- * OrderDispatcher — Smart WhatsApp order generation & supplier aggregation.
+ * OrderDispatcher — Smart WhatsApp & External Portal order generation, supplier aggregation & formatting.
  */
 
 import { CalculationService } from "./calculationService.js";
@@ -36,10 +36,15 @@ export const OrderDispatcher = {
     for (const sup of suppliers) {
       if (!sup.isActive) continue;
       const supItems = deficits.filter(d => d.supplierId === sup.id);
+      const estimatedTotalExclVat = supItems.reduce((sum, itm) => {
+        return sum + ((Number(itm.orderQty) || 0) * (Number(itm.unitCostExclVat) || 0));
+      }, 0);
+
       supplierMap[sup.id] = {
         supplier: sup,
         items: supItems,
-        totalItemsCount: supItems.length
+        totalItemsCount: supItems.length,
+        estimatedTotalExclVat: Number(estimatedTotalExclVat.toFixed(2))
       };
     }
 
@@ -47,11 +52,10 @@ export const OrderDispatcher = {
   },
 
   /**
-   * יצירת קישור וואטסאפ מעוצב בעברית תקנית
+   * בניית טקסט הזמנה תקני (לוואטסאפ או להעתקה לפורטל ספק)
    */
-  generateWhatsAppLink(supplier, itemsToOrder) {
-    if (!supplier || !supplier.whatsappPhone) return "";
-
+  formatOrderText(supplier, itemsToOrder) {
+    if (!supplier) return "";
     const activeOrders = itemsToOrder.filter(i => (Number(i.orderQty) || 0) > 0);
     if (activeOrders.length === 0) return "";
 
@@ -68,13 +72,39 @@ export const OrderDispatcher = {
     msg += `--------------------------------\n`;
 
     activeOrders.forEach((item, idx) => {
-      msg += `${idx + 1}. ${item.name} — ${item.orderQty} ${item.stockUnit}\n`;
+      const skuPart = item.supplierSku ? ` [מק"ט: ${item.supplierSku}]` : "";
+      msg += `${idx + 1}. ${item.name}${skuPart} — ${item.orderQty} ${item.stockUnit}\n`;
     });
 
     msg += `--------------------------------\n`;
     msg += `נא לאשר קבלת הזמנה ומועד אספקה.\nתודה, מטבח היקב.`;
+    return msg;
+  },
+
+  /**
+   * יצירת קישור וואטסאפ מעוצב בעברית תקנית
+   */
+  generateWhatsAppLink(supplier, itemsToOrder) {
+    if (!supplier || !supplier.whatsappPhone) return "";
+    const msg = this.formatOrderText(supplier, itemsToOrder);
+    if (!msg) return "";
 
     const cleanPhone = supplier.whatsappPhone.replace(/\D/g, "");
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+  },
+
+  /**
+   * תווית ידידותית לערוץ ההזמנה של הספק
+   */
+  getChannelLabel(orderChannel) {
+    switch (orderChannel) {
+      case "EXTERNAL_PORTAL":
+        return "פורטל / אפליקציית ספק";
+      case "PHONE":
+        return "טלפון / סוכן שטח";
+      case "WHATSAPP":
+      default:
+        return "וואטסאפ";
+    }
   }
 };

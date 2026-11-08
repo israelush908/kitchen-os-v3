@@ -31,6 +31,8 @@ export function renderFieldReceiving(container, options = {}) {
 
   const currentSupplier = suppliers.find(s => s.id === selectedSupplierId);
   const allSupplierItems = catalog.filter(c => c.supplierId === selectedSupplierId);
+  const openOrders = (state.logOrders || []).filter(o => o.status === "ORDERED");
+  const openOrderForSupplier = openOrders.find(o => o.supplierId === selectedSupplierId);
 
   // Initialize draft lines for this supplier
   allSupplierItems.forEach(item => {
@@ -42,6 +44,21 @@ export function renderFieldReceiving(container, options = {}) {
       };
     }
   });
+
+  // If jumped directly from an open order, preload its quantities automatically
+  if (options.preloadOrderId && openOrderForSupplier && openOrderForSupplier.id === options.preloadOrderId) {
+    allSupplierItems.forEach(item => {
+      const ordLine = (openOrderForSupplier.items || []).find(l => l.itemId === item.id);
+      draftLines[item.id] = {
+        receivedQty: ordLine ? Number(ordLine.orderedQty) || 0 : 0,
+        newUnitCost: Number(ordLine?.unitCostSnapshot ?? item.unitCostExclVat) || 0,
+        updateCatalogPrice: true
+      };
+    });
+    if (openOrderForSupplier.externalOrderRef && !invoiceNumber) {
+      invoiceNumber = openOrderForSupplier.externalOrderRef;
+    }
+  }
 
   // Filter items by search or deficit filter
   const visibleItems = allSupplierItems.filter(item => {
@@ -75,22 +92,45 @@ export function renderFieldReceiving(container, options = {}) {
         <div class="filter-bar" style="padding-bottom: 6px;">
           ${suppliers.map(sup => {
             const supItems = catalog.filter(c => c.supplierId === sup.id);
-            const supDeficits = supItems.filter(i => i.currentStock <= i.reorderPoint).length;
+            const hasOpenOrd = openOrders.some(o => o.supplierId === sup.id);
             const isSelected = sup.id === selectedSupplierId;
             return `
               <button
                 type="button"
                 class="filter-pill field-rcv-sup-pill ${isSelected ? 'active' : ''}"
                 data-sup="${sup.id}"
-                style="min-height: 44px; padding: 8px 14px; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;"
+                style="min-height: 44px; padding: 8px 14px; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; ${hasOpenOrd && !isSelected ? 'border-color: #1D4ED8; background: #EFF6FF; color: #1E3A8A;' : ''}"
               >
                 <span>${sup.name}</span>
-                <span class="mono" style="font-size: 12px; opacity: 0.85;">(${supItems.length})</span>
+                ${hasOpenOrd ? `<span style="font-size: 11px; background: #1D4ED8; color: #FFFFFF; padding: 1px 5px; border-radius: 4px;">בדרך</span>` : `<span class="mono" style="font-size: 12px; opacity: 0.85;">(${supItems.length})</span>`}
               </button>
             `;
           }).join('')}
         </div>
       </div>
+
+      ${openOrderForSupplier ? `
+        <!-- באנר הזמנה פתוחה שממתינה לקליטה מספק זה -->
+        <div style="background: #EFF6FF; border: 1.5px solid #1D4ED8; border-radius: 6px; padding: 10px 12px; margin-bottom: var(--space-sm); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: #1E3A8A;">
+              📦 קיימת הזמנה פתוחה מ-${currentSupplier?.name || 'הספק'} (${(openOrderForSupplier.items || []).length} פריטים שהוזמנו)
+            </div>
+            <div style="font-size: 12px; color: #1E40AF;">
+              ${openOrderForSupplier.orderChannel === 'EXTERNAL_PORTAL' ? 'הוזמן במערכת הספק' : 'נשלח בוואטסאפ'}
+              ${openOrderForSupplier.externalOrderRef ? ` • אסמכתא: ${openOrderForSupplier.externalOrderRef}` : ''}
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="btnFieldLoadFromOpenOrder"
+            style="min-height: 40px; padding: 6px 12px; font-size: 12px; font-weight: 700; background: #1D4ED8; border: 1.5px solid #0F1115;"
+          >
+            📥 טען כמויות מההזמנה
+          </button>
+        </div>
+      ` : ''}
 
       <!-- פרטי תעודת משלוח ופעולות מילוי מהיר -->
       <div style="background: var(--color-bg-surface, #FFFFFF); border: 1.5px solid #0F1115; border-radius: 6px; padding: 12px; margin-bottom: var(--space-md);">
@@ -357,6 +397,23 @@ export function renderFieldReceiving(container, options = {}) {
     renderFieldReceiving(container);
   });
 
+  // Auto-fill from open order for current supplier
+  container.querySelector("#btnFieldLoadFromOpenOrder")?.addEventListener("click", () => {
+    if (!openOrderForSupplier) return;
+    allSupplierItems.forEach(item => {
+      const ordLine = (openOrderForSupplier.items || []).find(l => l.itemId === item.id);
+      draftLines[item.id] = {
+        receivedQty: ordLine ? Number(ordLine.orderedQty) || 0 : 0,
+        newUnitCost: Number(draftLines[item.id]?.newUnitCost ?? ordLine?.unitCostSnapshot ?? item.unitCostExclVat) || 0,
+        updateCatalogPrice: true
+      };
+    });
+    if (openOrderForSupplier.externalOrderRef && !invoiceNumber) {
+      invoiceNumber = openOrderForSupplier.externalOrderRef;
+    }
+    renderFieldReceiving(container);
+  });
+
   // Auto-fill deficits for current supplier
   container.querySelector("#btnFieldFillDeficits")?.addEventListener("click", () => {
     allSupplierItems.forEach(item => {
@@ -514,3 +571,4 @@ function updateLiveReceivingTotals(container, allSupplierItems) {
   if (totalEl) totalEl.textContent = `₪${totalExclVat.toFixed(2)}`;
   if (btnEl) btnEl.textContent = `אשר קליטת הזמנה ועדכן מלאי (${activeCount} פריטים)`;
 }
+

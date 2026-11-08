@@ -125,6 +125,7 @@ class KitchenStore {
           ...JSON.parse(JSON.stringify(INITIAL_DATA)),
           logCounts: [],
           logWaste: [],
+          logOrders: [],
           logDeliveries: [],
           logLabor: [],
           logLaborDaily: []
@@ -497,10 +498,76 @@ class KitchenStore {
         SyncService.enqueue("MANAGER_TASK_DELETED", { taskId });
       }
 
-      // ================= DELIVERIES (קבלת סחורה ומשלוחים) =================
+      // ================= PURCHASE ORDERS & DELIVERIES (הזמנות רכש וקבלת סחורה) =================
 
       /**
-       * קליטת משלוח ספק, הוספת כמויות למלאי ועדכון מחירי קנייה בקטלוג
+       * תיעוד הזמנת רכש שיצאה לספק (וואטסאפ / מערכת הזמנות חיצונית של הספק / סוכן)
+       */
+      recordPurchaseOrder({
+        supplierId,
+        orderChannel = "WHATSAPP",
+        externalOrderRef = "",
+        orderedBy = "ישראל - שטח",
+        notes = "",
+        items = []
+      }) {
+        const supplier = (this.state.suppliers || []).find(s => s.id === supplierId);
+        const validItems = (items || [])
+          .filter(i => (Number(i.orderedQty) || 0) > 0)
+          .map(i => {
+            const catItem = (this.state.catalog || []).find(c => c.id === i.itemId);
+            const qty = Number(i.orderedQty) || 0;
+            const unitCost = Number(i.unitCostSnapshot ?? catItem?.unitCostExclVat) || 0;
+            return {
+              itemId: i.itemId,
+              itemName: i.itemName || catItem?.name || i.itemId,
+              supplierSku: i.supplierSku || catItem?.supplierSku || "",
+              unit: i.unit || catItem?.stockUnit || 'ק"ג',
+              orderedQty: qty,
+              unitCostSnapshot: unitCost,
+              estimatedLineTotal: Number((qty * unitCost).toFixed(2))
+            };
+          });
+
+        if (validItems.length === 0) {
+          throw new Error("לא נבחרו פריטים עם כמות חיובית לתיעוד ההזמנה");
+        }
+
+        const estimatedTotalExclVat = validItems.reduce((sum, l) => sum + l.estimatedLineTotal, 0);
+
+        const orderEntry = {
+          id: `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          timestamp: new Date().toISOString(),
+          supplierId: supplier ? supplier.id : supplierId,
+          supplierName: supplier ? supplier.name : "ספק",
+          orderChannel: orderChannel || supplier?.orderChannel || "WHATSAPP",
+          externalOrderRef: externalOrderRef.trim(),
+          orderedBy: orderedBy.trim() || "ישראל",
+          status: "ORDERED", // ORDERED | RECEIVED
+          estimatedTotalExclVat: Number(estimatedTotalExclVat.toFixed(2)),
+          notes: notes.trim(),
+          items: validItems
+        };
+
+        if (!this.state.logOrders) this.state.logOrders = [];
+        this.state.logOrders = [orderEntry, ...this.state.logOrders];
+        this.saveState();
+
+        SyncService.enqueue("ORDER_RECORDED", orderEntry);
+        return orderEntry;
+      }
+
+      /**
+       * מחיקת / ביטול הזמנת רכש מיומן ההזמנות
+       */
+      deleteOrderLog(orderId) {
+        this.state.logOrders = (this.state.logOrders || []).filter(o => o.id !== orderId);
+        this.saveState();
+        SyncService.enqueue("ORDER_LOG_DELETED", { orderId });
+      }
+
+      /**
+       * קליטת משלוח ספק, הוספת כמויות למלאי, עדכון מחירי קנייה בקטלוג וסגירת הזמנת רכש פתוחה
        */
       recordDelivery(deliveryData) {
         const supplier = this.state.suppliers.find(s => s.id === deliveryData.supplierId);
@@ -514,6 +581,28 @@ class KitchenStore {
           throw new Error("לא הוזנו פריטים עם כמות חיובית לקליטה במשלוח");
         }
 
+        // קישור וסגירה אוטומטית של הזמנה פתוחה עבור ספק זה (או לפי orderId מפורש)
+        if (!this.state.logOrders) this.state.logOrders = [];
+        const targetOrderId = deliveryData.orderId || (
+          this.state.logOrders.find(o => o.supplierId === deliveryData.supplierId && o.status === "ORDERED")?.id
+        );
+
+        if (targetOrderId) {
+          deliveryEntry.linkedOrderId = targetOrderId;
+          this.state.logOrders = this.state.logOrders.map(o => {
+            if (o.id === targetOrderId) {
+              return {
+                ...o,
+                status: "RECEIVED",
+                receivedAt: deliveryEntry.timestamp,
+                linkedDeliveryId: deliveryEntry.id,
+                invoiceNumber: deliveryEntry.invoiceNumber
+              };
+            }
+            return o;
+          });
+        }
+
         this.state.catalog = updatedCatalog;
         this.state.logDeliveries = [deliveryEntry, ...(this.state.logDeliveries || [])];
         this.saveState();
@@ -523,7 +612,7 @@ class KitchenStore {
       }
 
       /**
-       * ביטול / מחיקת משלוח מרשימת הלוגים (עם אפשרות לגרוע חזרה מהמלאי)
+       * ביטול / מחיקת משלוח מרשימת הלוגים (עם אפשרות לגרוע חזרה מהמלאי ולהחזיר את ההזמנה לסטטוס פתוחה)
        */
       deleteDeliveryLog(deliveryId, revertStock = true) {
         const list = this.state.logDeliveries || [];
@@ -539,6 +628,20 @@ class KitchenStore {
               ...catItem,
               currentStock: Number(nextStock.toFixed(3))
             };
+          });
+        }
+
+        if (target.linkedOrderId && Array.isArray(this.state.logOrders)) {
+          this.state.logOrders = this.state.logOrders.map(o => {
+            if (o.id === target.linkedOrderId) {
+              return {
+                ...o,
+                status: "ORDERED",
+                receivedAt: undefined,
+                linkedDeliveryId: undefined
+              };
+            }
+            return o;
           });
         }
 

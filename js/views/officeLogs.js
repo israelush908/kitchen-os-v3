@@ -15,10 +15,12 @@ export function renderOfficeLogs(container) {
   const logWaste = state.logWaste || [];
   const logCounts = state.logCounts || [];
   const logDeliveries = state.logDeliveries || [];
+  const logOrders = state.logOrders || [];
 
   // Summary KPIs
   const totalWasteCost = logWaste.reduce((sum, w) => sum + (Number(w.totalWasteCost) || 0), 0);
   const totalDeliveriesCost = logDeliveries.reduce((sum, d) => sum + (Number(d.totalAmountExclVat) || 0), 0);
+  const openOrdersCount = logOrders.filter(o => o.status === "ORDERED").length;
 
   container.innerHTML = `
     <div class="office-logs">
@@ -75,6 +77,9 @@ export function renderOfficeLogs(container) {
           <button class="filter-pill ${activeLogTab === 'COUNTS' ? 'active' : ''}" data-log="COUNTS">
             📦 היסטוריית ספירות מלאי (${logCounts.length})
           </button>
+          <button class="filter-pill ${activeLogTab === 'ORDERS' ? 'active' : ''}" data-log="ORDERS">
+            📋 יומן הזמנות רכש (${logOrders.length}${openOrdersCount > 0 ? ` • בדרך: ${openOrdersCount}` : ''})
+          </button>
           <button class="filter-pill ${activeLogTab === 'DELIVERIES' ? 'active' : ''}" data-log="DELIVERIES">
             🚚 היסטוריית משלוחים (${logDeliveries.length})
           </button>
@@ -97,6 +102,7 @@ export function renderOfficeLogs(container) {
       <div class="card">
         ${activeLogTab === "WASTE" ? renderWasteTable(logWaste, catalog) : ""}
         ${activeLogTab === "COUNTS" ? renderCountsTable(logCounts, catalog) : ""}
+        ${activeLogTab === "ORDERS" ? renderOrdersTable(logOrders) : ""}
         ${activeLogTab === "DELIVERIES" ? renderDeliveriesTable(logDeliveries) : ""}
       </div>
     </div>
@@ -150,6 +156,17 @@ export function renderOfficeLogs(container) {
       const id = btn.dataset.id;
       if (confirm("האם לבטל רישום משלוח זה ולגרוע את הכמויות שנקלטו מהמלאי?")) {
         store.deleteDeliveryLog(id, true);
+        renderOfficeLogs(container);
+      }
+    });
+  });
+
+  // Delete order log
+  container.querySelectorAll(".btn-delete-ord-log").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      if (confirm("האם למחוק רשומת הזמנת רכש זו מיומן ההזמנות?")) {
+        store.deleteOrderLog(id);
         renderOfficeLogs(container);
       }
     });
@@ -304,6 +321,66 @@ function renderCountsTable(logCounts, catalog) {
   `;
 }
 
+function renderOrdersTable(logOrders) {
+  const filtered = (logOrders || []).filter(o => {
+    return !searchQuery ||
+      (o.supplierName && o.supplierName.includes(searchQuery)) ||
+      (o.externalOrderRef && o.externalOrderRef.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (o.orderedBy && o.orderedBy.includes(searchQuery));
+  });
+
+  if (filtered.length === 0) {
+    return `<div class="empty-state"><div class="empty-state-title">אין רשומות הזמנות רכש להצגה</div></div>`;
+  }
+
+  return `
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>מזהה</th>
+            <th>תאריך ושעה</th>
+            <th>ספק</th>
+            <th>ערוץ הזמנה</th>
+            <th>אסמכתא / הזמנת ספק</th>
+            <th>פריטים שהוזמנו</th>
+            <th>סכום משוער (ללא מע"מ)</th>
+            <th>סטטוס</th>
+            <th style="width: 80px;">פעולות</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(o => {
+            const isReceived = o.status === "RECEIVED";
+            const chLabel = o.orderChannel === "EXTERNAL_PORTAL" ? "🌐 מערכת ספק" : (o.orderChannel === "PHONE" ? "📞 טלפון" : "💬 וואטסאפ");
+            return `
+              <tr>
+                <td class="mono" style="font-size: 11px; color: var(--color-text-dim);">${o.id}</td>
+                <td style="font-size: 12px;">${formatTime(o.timestamp)}</td>
+                <td><strong>${o.supplierName}</strong></td>
+                <td><span class="badge ${o.orderChannel === 'EXTERNAL_PORTAL' ? 'badge-warning' : 'badge-gray'}">${chLabel}</span></td>
+                <td class="mono">${o.externalOrderRef || '—'}</td>
+                <td><span class="badge badge-wine">${(o.items || []).length} פריטים</span></td>
+                <td class="mono" style="font-weight: 700;">₪${Number(o.estimatedTotalExclVat || 0).toFixed(2)}</td>
+                <td>
+                  <span class="badge ${isReceived ? 'badge-success' : 'badge-warning'}">
+                    ${isReceived ? '✅ נקלט' : '🚚 בדרך'}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-danger btn-delete-ord-log" data-id="${o.id}" style="min-height: 28px; padding: 2px 8px; font-size: 11px;">
+                    ✕
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderDeliveriesTable(logDeliveries) {
   const filtered = logDeliveries.filter(d => {
     return !searchQuery ||
@@ -402,6 +479,18 @@ function exportCurrentLogToCsv(tab, state) {
       c.delta ?? "",
       c.totalCountValue ?? c.countValue ?? 0,
       c.reporter
+    ]);
+  } else if (tab === "ORDERS") {
+    headers = ["מזהה", "תאריך", "ספק", "ערוץ הזמנה", "אסמכתא ספק", "סכום משוער ללא מעמ", "סטטוס", "הוזמן עי"];
+    rows = (state.logOrders || []).map(o => [
+      o.id,
+      o.timestamp,
+      o.supplierName,
+      o.orderChannel,
+      o.externalOrderRef || "",
+      o.estimatedTotalExclVat,
+      o.status,
+      o.orderedBy || ""
     ]);
   } else {
     headers = ["מזהה", "תאריך", "ספק", "מספר תעודה", "סהכ ללא מעמ", "נקלט עי", "הערות"];

@@ -19,6 +19,8 @@ export const INITIAL_DATA = {
       category: "ירקות ופירות",
       contactName: "אשי",
       whatsappPhone: "972504008601",
+      orderChannel: "WHATSAPP",
+      portalUrl: "",
       deliveryDays: ["ראשון", "שלישי", "חמישי"],
       isActive: true
     },
@@ -28,6 +30,8 @@ export const INITIAL_DATA = {
       category: "גבינות ומחלבה",
       contactName: "דוד שמואלי",
       whatsappPhone: "972544846938",
+      orderChannel: "EXTERNAL_PORTAL",
+      portalUrl: "",
       deliveryDays: ["שני", "רביעי"],
       isActive: true
     },
@@ -37,6 +41,8 @@ export const INITIAL_DATA = {
       category: "ירקות ופירות",
       contactName: "רונן",
       whatsappPhone: "972521234567",
+      orderChannel: "WHATSAPP",
+      portalUrl: "",
       deliveryDays: ["שלישי", "חמישי"],
       isActive: true
     },
@@ -46,6 +52,8 @@ export const INITIAL_DATA = {
       category: "לחמים ומאפים",
       contactName: "שמעון",
       whatsappPhone: "972509876543",
+      orderChannel: "WHATSAPP",
+      portalUrl: "",
       deliveryDays: ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי"],
       isActive: true
     },
@@ -55,6 +63,8 @@ export const INITIAL_DATA = {
       category: "אריזות ומתכלים",
       contactName: "יוסי",
       whatsappPhone: "972533334455",
+      orderChannel: "EXTERNAL_PORTAL",
+      portalUrl: "",
       deliveryDays: ["רביעי", "שישי"],
       isActive: true
     }
@@ -691,5 +701,8 @@ export const INITIAL_DATA = {
       splh: 844.54,
       notes: "שישי שיא ביקורים ביקב"
     }
-  ]
+  ],
+
+  logOrders: [],
+  logDeliveries: []
 };

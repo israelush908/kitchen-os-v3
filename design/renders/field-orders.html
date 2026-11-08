@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kitchen OS v3.0 — הזמנות רכש חכמות</title>
+<!-- Material Symbols & Typography -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed-dim": "#ffb599",
+            "on-secondary-fixed-variant": "#0039b5",
+            "on-surface-variant": "#5a4138",
+            "on-primary-fixed": "#370e00",
+            "on-error-container": "#93000a",
+            "error": "#ba1a1a",
+            "primary-container": "#cc4900",
+            "tertiary-container": "#6b7584",
+            "on-background": "#1a1c20",
+            "surface-variant": "#e2e2e8",
+            "surface-container": "#ededf3",
+            "inverse-on-surface": "#f0f0f6",
+            "secondary-fixed": "#dce1ff",
+            "on-tertiary-fixed-variant": "#3e4755",
+            "inverse-surface": "#2f3035",
+            "tertiary": "#535d6b",
+            "secondary": "#1d4ed8",
+            "on-surface": "#1a1c20",
+            "on-secondary-fixed": "#001551",
+            "secondary-container": "#4069f2",
+            "on-primary-fixed-variant": "#7f2b00",
+            "on-primary-container": "#fffbff",
+            "on-primary": "#ffffff",
+            "on-error": "#ffffff",
+            "outline": "#8e7166",
+            "on-tertiary-container": "#fdfcff",
+            "on-tertiary": "#ffffff",
+            "primary-fixed": "#ffdbce",
+            "surface-container-high": "#e8e8ed",
+            "tertiary-fixed-dim": "#bdc7d8",
+            "tertiary-fixed": "#d9e3f4",
+            "surface-bright": "#f9f9ff",
+            "surface": "#f9f9ff",
+            "inverse-primary": "#ffb599",
+            "surface-tint": "#a73a00",
+            "on-tertiary-fixed": "#121c28",
+            "on-secondary": "#ffffff",
+            "outline-variant": "#e2bfb2",
+            "surface-container-lowest": "#ffffff",
+            "surface-dim": "#d9d9df",
+            "primary": "#a33900",
+            "background": "#f9f9ff",
+            "on-secondary-container": "#fffbff",
+            "secondary-fixed-dim": "#b7c4ff",
+            "surface-container-low": "#f3f3f9",
+            "error-container": "#ffdad6",
+            "surface-container-highest": "#e2e2e8"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xl": "1.5rem",
+            "space-md": "0.75rem",
+            "space-sm": "0.5rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "gutter": "0.75rem"
+          },
+          "fontFamily": {
+            "label-numeric-sm": ["Space Mono"],
+            "label-numeric-md": ["Space Mono"],
+            "headline-lg-mobile": ["Rubik"],
+            "label-numeric-lg": ["Space Mono"],
+            "body-sm": ["Rubik"],
+            "headline-sm": ["Rubik"],
+            "body-md": ["Rubik"],
+            "body-lg": ["Rubik"],
+            "label-caps": ["Rubik"],
+            "headline-md": ["Rubik"],
+            "headline-lg": ["Rubik"]
+          },
+          "fontSize": {
+            "label-numeric-sm": ["14px", { "lineHeight": "18px", "fontWeight": "700" }],
+            "label-numeric-md": ["22px", { "lineHeight": "26px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-numeric-lg": ["26px", { "lineHeight": "30px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "22px", "fontWeight": "500" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "700" }],
+            "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "headline-lg": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    body {
+      background-color: #F8F7F4;
+      color: #0F1115;
+      font-family: 'Rubik', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .structural-border {
+      border: 1.5px solid #0F1115;
+    }
+    .subtle-border {
+      border-color: #D6D3C9;
+    }
+    .tabular-numbers {
+      font-family: 'Space Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex justify-center items-start selection:bg-secondary selection:text-white">
+<!-- iPhone 15 Frame Viewport Container (393px width fixed-edge ledger) -->
+<div class="w-full max-w-[393px] min-h-screen bg-[#F8F7F4] flex flex-col relative pb-24 shadow-sm border-x border-[#D6D3C9]/50">
+<!-- 1. Top Header (56px) - Shared TopAppBar Anchor Pattern -->
+<header class="h-14 w-full bg-surface-container-lowest structural-border border-t-0 border-x-0 flex items-center justify-between px-margin sticky top-0 z-40">
+<!-- Brand & Sync Lead (Right side in RTL) -->
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="sync">sync</span>
+<span class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight">Kitchen OS v3.0</span>
+</div>
+<!-- Center operational toggle: שטח / משרד -->
+<div class="flex items-center structural-border rounded bg-surface-container-lowest p-[2px]">
+<button class="px-2.5 py-1 text-label-caps font-label-caps bg-on-surface text-surface-container-lowest rounded transition-all">
+          שטח
+        </button>
+<button class="px-2.5 py-1 text-label-caps font-label-caps text-tertiary hover:text-on-surface transition-all">
+          משרד
+        </button>
+</div>
+<!-- Live Sync indicator (Left side in RTL) -->
+<div class="flex items-center gap-1.5 bg-[#F8F7F4] px-2 py-1 rounded border border-[#D6D3C9]">
+<span class="w-2 h-2 rounded-full bg-[#15803D] inline-block animate-pulse"></span>
+<span class="text-body-sm font-body-sm font-medium text-tertiary">מסונכרן</span>
+</div>
+</header>
+<!-- Main Content Canvas Container -->
+<main class="flex-1 px-margin pt-3 flex flex-col gap-space-md">
+<!-- 2. Editorial Summary Strip -->
+<section class="flex items-center justify-between py-1 border-b border-[#D6D3C9]">
+<div class="flex flex-col">
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile text-on-surface">הזמנות רכש מומלצות</h1>
+<p class="text-body-sm font-body-sm text-[#4B5563] mt-0.5">חישוב אוטומטי מול תקן סופ״ש</p>
+</div>
+<!-- High contrast alert badge -->
+<div class="border-[1.5px] border-[#B91C1C] bg-[#FEF2F2] px-2.5 py-1 rounded text-[#B91C1C] flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#B91C1C]"></span>
+<span class="text-label-caps font-label-caps">5 פריטים בחוסר</span>
+</div>
+</section>
+<!-- 3. Supplier Selector Segmented Tabs (Horizontal, min 48px target) -->
+<section aria-label="ספקים" class="grid grid-cols-2 gap-2" role="tablist">
+<!-- Active Tab: אשי שוק (Apron Cobalt #1D4ED8) -->
+<button aria-selected="true" class="h-12 px-3 rounded flex items-center justify-center gap-1.5 bg-secondary text-white structural-border font-body-lg text-body-lg font-bold shadow-none active:translate-y-[1px] transition-transform" role="tab">
+<span class="material-symbols-outlined text-[18px]" data-icon="local_shipping">local_shipping</span>
+<span>אשי שוק · ירקות (3)</span>
+</button>
+<!-- Inactive Tab: מחלבות גד -->
+<button aria-selected="false" class="h-12 px-3 rounded flex items-center justify-center gap-1.5 bg-surface-container-lowest text-on-surface structural-border hover:bg-surface-container-high transition-colors font-body-md text-body-md" role="tab">
+<span class="material-symbols-outlined text-tertiary text-[18px]" data-icon="storefront">storefront</span>
+<span class="text-[#4B5563]">מחלבות גד (2)</span>
+</button>
+</section>
+<!-- 4. Active Supplier Order Ledger (Editorial Table Block) -->
+<section class="bg-surface-container-lowest structural-border rounded overflow-hidden flex flex-col">
+<!-- Ledger Header Strip -->
+<div class="bg-surface-container px-3 py-2 border-b border-[#D6D3C9] flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">אשי שוק — ירקות ופירות</span>
+<span class="text-label-numeric-sm font-label-numeric-sm bg-surface-container-lowest px-1.5 py-0.5 rounded border border-[#D6D3C9] text-tertiary">#SUP-012</span>
+</div>
+<div class="flex items-center gap-1 text-label-caps font-label-caps text-on-surface">
+<span class="material-symbols-outlined text-primary text-[15px]" data-icon="schedule">schedule</span>
+<span>אספקה: 05:30 מחר</span>
+</div>
+</div>
+<!-- Ledger Rows Container -->
+<div class="divide-y divide-[#D6D3C9]">
+<!-- Row 1: חסה קיסר -->
+<div class="p-3 flex items-center justify-between hover:bg-[#F8F7F4]/50 transition-colors">
+<div class="flex flex-col gap-0.5 pr-1">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">חסה קיסר</span>
+<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span>
+</div>
+<div class="text-body-sm font-body-sm text-[#4B5563]">
+                במלאי: <span class="tabular-numbers font-medium text-on-surface">2</span> צרור · תקן סופ״ש: <span class="tabular-numbers font-medium text-on-surface">10</span>
+</div>
+</div>
+<!-- Quantitative Stepper Component (48x48px targets) -->
+<div class="flex items-center gap-1.5" dir="ltr">
+<button aria-label="הפחת כמות חסה" class="w-12 h-12 flex items-center justify-center bg-surface-container-lowest text-on-surface structural-border rounded hover:bg-surface-container active:bg-surface-container-high transition-colors font-label-numeric-md text-label-numeric-md">
+                −
+              </button>
+<div class="min-w-[56px] text-center flex flex-col items-center justify-center">
+<span class="tabular-numbers text-label-numeric-lg font-label-numeric-lg text-on-surface leading-none">8</span>
+<span class="text-label-caps font-label-caps text-[#4B5563] mt-0.5" dir="rtl">צרור</span>
+</div>
+<button aria-label="הוסף כמות חסה" class="w-12 h-12 flex items-center justify-center bg-surface-container-lowest text-on-surface structural-border rounded hover:bg-surface-container active:bg-surface-container-high transition-colors font-label-numeric-md text-label-numeric-md">
+                +
+              </button>
+</div>
+</div>
+<!-- Row 2: עגבניות שרי תמר -->
+<div class="p-3 flex items-center justify-between hover:bg-[#F8F7F4]/50 transition-colors">
+<div class="flex flex-col gap-0.5 pr-1">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">עגבניות שרי תמר</span>
+<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span>
+</div>
+<div class="text-body-sm font-body-sm text-[#4B5563]">
+                במלאי: <span class="tabular-numbers font-medium text-on-surface">1.5</span> ק״ג · תקן סופ״ש: <span class="tabular-numbers font-medium text-on-surface">6.5</span>
+</div>
+</div>
+<!-- Stepper Component -->
+<div class="flex items-center gap-1.5" dir="ltr">
+<button aria-label="הפחת כמות עגבניות שרי" class="w-12 h-12 flex items-center justify-center bg-surface-container-lowest text-on-surface structural-border rounded hover:bg-surface-container active:bg-surface-container-high transition-colors font-label-numeric-md text-label-numeric-md">
+                −
+              </button>
+<div class="min-w-[56px] text-center flex flex-col items-center justify-center">
+<span class="tabular-numbers text-label-numeric-lg font-label-numeric-lg text-on-surface leading-none">5.0</span>
+<span class="text-label-caps font-label-caps text-[#4B5563] mt-0.5" dir="rtl">ק״ג</span>
+</div>
+<button aria-label="הוסף כמות עגבניות שרי" class="w-12 h-12 flex items-center justify-center bg-surface-container-lowest text-on-surface structural-border rounded hover:bg-surface-container active:bg-surface-container-high transition-colors font-label-numeric-md text-label-numeric-md">
+                +
+              </button>
+</div>
+</div>
+<!-- Row 3: בזיליקום טרי (אזל במלאי Alert) -->
+<div class="p-3 flex items-center justify-between bg-error-container/20 hover:bg-error-container/30 transition-colors">
+<div class="flex flex-col gap-0.5 pr-1">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">בזיליקום טרי</span>
+<span class="px-1.5 py-0.2 bg-[#FEF2F2] border border-[#B91C1C] text-[#B91C1C] text-label-caps font-label-caps rounded">
+                  אזל במלאי
+                </span>
+</div>
+<div class="text-body-sm font-body-sm text-[#4B5563]">
+                במלאי: <span class="tabular-numbers font-bold text-[#B91C1C]">0</span> צרור · תקן סופ״ש: <span class="tabular-numbers font-medium text-on-surface">6</span>
+</div>
+</div>
+<!-- Stepper Component -->
+<div class="flex items-center gap-1.5" dir="ltr">
+<button aria-label="הפחת כמות בזיליקום" class="w-12 h-12 flex items-center justify-center bg-surface-container-lowest text-on-surface structural-border rounded hover:bg-surface-container active:bg-surface-container-high transition-colors font-label-numeric-md text-label-numeric-md">
+                −
+              </button>
+<div class="min-w-[56px] text-center flex flex-col items-center justify-center">
+<span class="tabular-numbers text-label-numeric-lg font-label-numeric-lg text-[#B91C1C] leading-none">6</span>
+<span class="text-label-caps font-label-caps text-[#4B5563] mt-0.5" dir="rtl">צרור</span>
+</div>
+<button aria-label="הוסף כמות בזיליקום" class="w-12 h-12 flex items-center justify-center bg-surface-container-lowest text-on-surface structural-border rounded hover:bg-surface-container active:bg-surface-container-high transition-colors font-label-numeric-md text-label-numeric-md">
+                +
+              </button>
+</div>
+</div>
+</div>
+<!-- Ledger Summary Footer Row -->
+<div class="bg-[#F8F7F4] p-3 border-t-[1.5px] border-[#0F1115] flex items-center justify-between text-body-md font-body-md font-medium">
+<div class="flex items-center gap-1 text-on-surface">
+<span>סה״כ פריטים להזמנה:</span>
+<span class="tabular-numbers font-bold font-label-numeric-sm text-label-numeric-sm">3</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="text-[#4B5563] text-body-sm font-body-sm">אומדן כספי:</span>
+<span class="tabular-numbers font-headline-sm text-headline-sm font-bold text-primary">₪385.00</span>
+</div>
+</div>
+</section>
+<!-- 5. Primary Action Bar (Chef Vermilion CTA) -->
+<section class="pt-1">
+<button class="w-full h-[52px] bg-[#EA580C] hover:bg-primary-container text-white structural-border rounded font-bold text-body-lg font-body-lg flex items-center justify-center gap-2.5 active:translate-x-[1px] active:translate-y-[1px] transition-transform">
+<span class="material-symbols-outlined text-[22px]" data-icon="send">send</span>
+<span>שלח הזמנה בוואטסאפ לאשי שוק</span>
+</button>
+<p class="text-center text-label-caps font-label-caps text-[#4B5563] mt-2">
+          מייצר טקסט תקני מובנה לשליחה ישירה לנייד של הספק
+        </p>
+</section>
+</main>
+<!-- 6. Bottom Navigation Bar (Docked Semantic Shell Anchor) -->
+<nav aria-label="ניווט ראשי" class="fixed bottom-0 max-w-[393px] w-full z-50 flex justify-around items-center px-margin py-space-xs bg-surface-container-lowest structural-border border-b-0 border-x-0">
+<!-- Destination 1: מלאי -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high rounded px-3 py-1.5 transition-colors" href="#inventory">
+<span class="material-symbols-outlined text-[22px]" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-caps font-label-caps mt-0.5">מלאי</span>
+</a>
+<!-- Destination 2: הכנות -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high rounded px-3 py-1.5 transition-colors" href="#prep">
+<span class="material-symbols-outlined text-[22px]" data-icon="skillet">skillet</span>
+<span class="text-label-caps font-label-caps mt-0.5">הכנות</span>
+</a>
+<!-- Destination 3: ספירה -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high rounded px-3 py-1.5 transition-colors" href="#count">
+<span class="material-symbols-outlined text-[22px]" data-icon="format_list_numbered_rtl">format_list_numbered_rtl</span>
+<span class="text-label-caps font-label-caps mt-0.5">ספירה</span>
+</a>
+<!-- Destination 4: יומן / הזמנות (ACTIVE: Orders focus mapped from JSON blueprint) -->
+<a class="flex flex-col items-center justify-center bg-secondary text-on-secondary rounded px-3 py-1.5 border border-on-surface active:scale-95 duration-75" href="#orders">
+<span class="material-symbols-outlined text-[22px]" data-icon="menu_book" data-weight="fill" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="text-label-caps font-label-caps mt-0.5 font-bold">יומן</span>
+</a>
+</nav>
+</div>
+</body></html>

@@ -112,12 +112,12 @@ class KitchenApp {
 
       if (!status.isOnline) {
         badge.classList.add("offline");
-        text.textContent = "לא מקוון (Offline)";
+        text.textContent = "שמור מקומית";
       } else if (status.pendingCount > 0) {
         badge.classList.add("pending");
-        text.textContent = `ממתין לסנכרון (${status.pendingCount})`;
+        text.textContent = `מסנכרן (${status.pendingCount})`;
       } else {
-        text.textContent = "מסונכרן לענן";
+        text.textContent = "מסונכרן";
       }
     };
 

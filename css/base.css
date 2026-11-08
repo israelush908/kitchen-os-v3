@@ -1,8 +1,9 @@
 /**
  * Base CSS — Reset, Typography, RTL Conventions, Focus & Accessibility
+ * Aesthetic: Swiss Kitchen Editorial
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -40,26 +41,27 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-interactive);
-  border-radius: var(--radius-full);
+  background: var(--color-border-subtle);
+  border-radius: var(--radius-badge);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-strong);
+  background: var(--color-ink-secondary);
 }
 
-/* Focus styles for keyboard accessibility */
+/* Focus styles for keyboard accessibility (R19) */
 :focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 2px;
 }
 
-/* Reduced motion accessibility */
+/* Reduced motion accessibility (R28) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transform: none !important;
     scroll-behavior: auto !important;
   }
 }
@@ -68,4 +70,10 @@ body {
 .text-dim { color: var(--color-text-dim); }
 .text-secondary { color: var(--color-text-secondary); }
 .font-strong { font-weight: var(--font-weight-strong); }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.mono {
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  display: inline-block;
+}

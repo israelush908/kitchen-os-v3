@@ -4,7 +4,7 @@
  * even inside walk-in coolers without reception or when the PC is turned off.
  */
 
-const CACHE_NAME = "kitchen-os-v3-cloud-v4";
+const CACHE_NAME = "kitchen-os-v3-cloud-v5";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -63,34 +63,17 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  // Network-first for JSON/API, fallback to cache
-  if (req.url.includes("/data/kitchen_db.json") || req.url.includes("/api/")) {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
+  // Network-first for HTML, JS, CSS, JSON and API so cloud updates appear immediately on refresh
+  event.respondWith(
+    fetch(req)
+      .then((res) => {
+        if (res && res.status === 200) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
-          return res;
-        })
-        .catch(() => caches.match(req))
-    );
-    return;
-  }
-
-  // Stale-while-revalidate for static assets
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      const networkFetch = fetch(req)
-        .then((res) => {
-          if (res && res.status === 200) {
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || networkFetch;
-    })
+        }
+        return res;
+      })
+      .catch(() => caches.match(req))
   );
 });
 

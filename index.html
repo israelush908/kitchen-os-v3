@@ -19,11 +19,11 @@
 
   <!-- Design Tokens & Styles -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2216%22 fill=%22%230F1115%22/><text x=%2250%22 y=%2268%22 text-anchor=%22middle%22 font-family=%22monospace%22 font-weight=%22700%22 fill=%22%23FFFFFF%22 font-size=%2248%22>K3</text></svg>" />
-  <link rel="stylesheet" href="design/tokens.css" />
-  <link rel="stylesheet" href="css/base.css" />
-  <link rel="stylesheet" href="css/layout.css" />
-  <link rel="stylesheet" href="css/components.css" />
-  <link rel="stylesheet" href="css/views.css" />
+  <link rel="stylesheet" href="design/tokens.css?v=5" />
+  <link rel="stylesheet" href="css/base.css?v=5" />
+  <link rel="stylesheet" href="css/layout.css?v=5" />
+  <link rel="stylesheet" href="css/components.css?v=5" />
+  <link rel="stylesheet" href="css/views.css?v=5" />
 </head>
 <body class="mode-field">
   <div id="app">
@@ -160,7 +160,7 @@
                 <span class="item-icon" aria-hidden="true">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
                 </span>
-                <span>קבלת סחורה</span>
+                <span>הזמנות וקבלת סחורה</span>
               </button>
             </li>
             <li>
@@ -212,11 +212,13 @@
   </div>
 
   <!-- Main JavaScript App Bootstrapper -->
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js?v=5"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=5").then((reg) => {
+          reg.update();
+        }).catch(() => {});
       });
     }
   </script>

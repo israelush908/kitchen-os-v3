@@ -8,7 +8,7 @@ import { store } from "../store.js";
 import { OrderDispatcher } from "../services/orderDispatcher.js";
 import { renderFieldReceiving } from "./fieldReceiving.js";
 
-let activeOrdersMode = "DISPATCH"; // "DISPATCH" (שיגור ותיעוד הזמנה) | "RECEIVE" (קליטת הזמנה / סחורה)
+let activeOrdersMode = "DISPATCH"; // "DISPATCH" (שיגור הזמנה) | "RECEIVE" (קליטת סחורה) | "LOG" (יומן הזמנות רכש)
 let selectedSupplierId = "";
 let manualOverrides = {}; // { itemId: quantity }
 let portalCheckedItems = {}; // { itemId: boolean } — צ'קליסט עזר להזנה בפורטל ספק חיצוני
@@ -25,7 +25,8 @@ export function renderFieldOrders(container) {
   // סנן רק ספקים עם פריטים להזמנה
   const activeOrders = supplierOrders.filter(so => so.totalItemsCount > 0);
   const totalDeficitItems = activeOrders.reduce((acc, grp) => acc + grp.totalItemsCount, 0);
-  const openOrders = (state.logOrders || []).filter(o => o.status === "ORDERED");
+  const allLoggedOrders = state.logOrders || [];
+  const openOrders = allLoggedOrders.filter(o => o.status === "ORDERED");
   const deliveriesCount = (state.logDeliveries || []).length;
 
   if (activeOrders.length > 0) {
@@ -41,26 +42,33 @@ export function renderFieldOrders(container) {
 
   container.innerHTML = `
     <div class="field-view">
-      <!-- סרגל עליון דביק עם מתג דו-מצבי (הזמנות רכש מול קליטת סחורה) וטאבים של ספקים -->
+      <!-- סרגל עליון דביק עם 3 לשוניות ברורות: הזמנות רכש | קליטת סחורה | יומן הזמנות -->
       <div class="field-control-strip">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px;">
           <button
             type="button"
             id="btnModeOrderDispatch"
             class="filter-pill ${activeOrdersMode === 'DISPATCH' ? 'active' : ''}"
-            style="width: 100%;"
+            style="width: 100%; padding: 8px 6px; font-size: 13px;"
           >
-            <span>הזמנות רכש (${activeOrders.length})</span>
-            ${openOrders.length > 0 ? `<span class="mono">· בדרך: ${openOrders.length}</span>` : ''}
+            <span>הזמנות (${activeOrders.length})</span>
           </button>
           <button
             type="button"
             id="btnModeOrderReceive"
             class="filter-pill ${activeOrdersMode === 'RECEIVE' ? 'active' : ''}"
-            style="width: 100%;"
+            style="width: 100%; padding: 8px 6px; font-size: 13px;"
           >
             <span>קליטת סחורה</span>
             <span class="mono">${openOrders.length > 0 ? `(${openOrders.length})` : (deliveriesCount > 0 ? `(${deliveriesCount})` : '')}</span>
+          </button>
+          <button
+            type="button"
+            id="btnModeOrderLog"
+            class="filter-pill ${activeOrdersMode === 'LOG' ? 'active' : ''}"
+            style="width: 100%; padding: 8px 6px; font-size: 13px;"
+          >
+            <span>יומן הזמנות (${allLoggedOrders.length})</span>
           </button>
         </div>
 
@@ -124,6 +132,11 @@ export function renderFieldOrders(container) {
     renderFieldOrders(container);
   });
 
+  container.querySelector("#btnModeOrderLog")?.addEventListener("click", () => {
+    activeOrdersMode = "LOG";
+    renderFieldOrders(container);
+  });
+
   // Supplier Tab switching
   container.querySelectorAll(".supplier-tab-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -134,6 +147,11 @@ export function renderFieldOrders(container) {
 
   if (activeOrdersMode === "RECEIVE") {
     renderFieldReceiving(subContainer);
+    return;
+  }
+
+  if (activeOrdersMode === "LOG") {
+    renderFieldOrdersHistoryLog(subContainer, container, allLoggedOrders);
     return;
   }
 
@@ -560,6 +578,126 @@ function recordGroupOrder(group, channel, container) {
   } catch (err) {
     alert("שגיאה בתיעוד ההזמנה: " + err.message);
   }
+}
+
+function renderFieldOrdersHistoryLog(subContainer, rootContainer, allLoggedOrders) {
+  const openCount = allLoggedOrders.filter(o => o.status === "ORDERED").length;
+  const receivedCount = allLoggedOrders.filter(o => o.status === "RECEIVED").length;
+
+  subContainer.innerHTML = `
+    <div style="padding: 12px 16px; border-bottom: var(--border-structural); background: var(--color-bg-surface); display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 style="font-size: 17px; font-weight: 700; color: var(--color-ink-primary);">יומן הזמנות רכש (וואטסאפ + פורטלים)</h2>
+        <div style="font-size: 12px; color: var(--color-ink-secondary); margin-top: 2px;">
+          פתוחות בדרך: <strong class="mono">${openCount}</strong> · נקלטו במלאי: <strong class="mono">${receivedCount}</strong>
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary" id="btnNewManualOrderFromLog" style="min-height: 40px; padding: 6px 10px; font-size: 12px;">
+        + להזמנת חוסרים
+      </button>
+    </div>
+
+    ${allLoggedOrders.length === 0 ? `
+      <div class="empty-state">
+        <div class="empty-state-title">יומן ההזמנות ריק כרגע</div>
+        <div class="empty-state-desc">
+          כל הזמנה שתשלח בוואטסאפ או תתעד ממערכת הזמנות של ספק תישמר כאן אוטומטית עם פירוט הפריטים והסטטוס שלה.
+        </div>
+        <button type="button" class="btn btn-primary" id="btnGoToDispatchFromEmptyLog" style="margin-top: 12px; min-height: 48px;">
+          עבור להזמנות רכש
+        </button>
+      </div>
+    ` : `
+      <div style="display: flex; flex-direction: column;">
+        ${allLoggedOrders.map(ord => {
+          const isReceived = ord.status === "RECEIVED";
+          const channelLabel = ord.orderChannel === "EXTERNAL_PORTAL"
+            ? "🌐 פורטל ספק"
+            : (ord.orderChannel === "PHONE" ? "📞 טלפוני" : "💬 וואטסאפ");
+          const itemsText = (ord.items || []).map(i => `${i.itemName} (${i.orderedQty} ${i.unit || ''})`).join(" · ");
+
+          return `
+            <div style="padding: 14px 16px; background: var(--color-bg-surface); border-bottom: var(--border-structural);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <strong style="font-size: 16px; color: var(--color-ink-primary);">${ord.supplierName}</strong>
+                    <span class="badge-unit">${channelLabel}</span>
+                    <span class="badge ${isReceived ? 'badge-success' : 'badge-cobalt'}">
+                      ${isReceived ? 'נקלט במלאי' : 'בדרך (ממתין לקליטה)'}
+                    </span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--color-ink-secondary); margin-top: 4px;">
+                    תאריך: <span class="mono">${formatShortTime(ord.timestamp)}</span>
+                    ${ord.externalOrderRef ? ` · אסמכתא: <strong class="mono">${ord.externalOrderRef}</strong>` : ''}
+                    · סה"כ משוער: <strong class="mono">₪${Number(ord.estimatedTotalExclVat || 0).toFixed(2)}</strong>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  ${!isReceived ? `
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-log-receive-now"
+                      data-sup="${ord.supplierId}"
+                      data-order="${ord.id}"
+                      style="min-height: 40px; padding: 6px 12px; font-size: 12px;"
+                    >
+                      קלוט משלוח
+                    </button>
+                  ` : ''}
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-log-delete-ord"
+                    data-order="${ord.id}"
+                    style="min-height: 40px; width: 40px; padding: 0;"
+                    title="מחק הזמנה מהיומן"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              <div style="margin-top: 8px; font-size: 13px; color: var(--color-ink-primary); background: var(--color-bg-base); padding: 8px 10px; border-radius: 4px; border: 1px solid var(--color-border-subtle);">
+                ${itemsText || 'ללא פירוט פריטים'}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `}
+  `;
+
+  subContainer.querySelector("#btnNewManualOrderFromLog")?.addEventListener("click", () => {
+    activeOrdersMode = "DISPATCH";
+    renderFieldOrders(rootContainer);
+  });
+
+  subContainer.querySelector("#btnGoToDispatchFromEmptyLog")?.addEventListener("click", () => {
+    activeOrdersMode = "DISPATCH";
+    renderFieldOrders(rootContainer);
+  });
+
+  subContainer.querySelectorAll(".btn-log-receive-now").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const supId = btn.dataset.sup;
+      const orderId = btn.dataset.order;
+      activeOrdersMode = "RECEIVE";
+      renderFieldOrders(rootContainer);
+      const rcvRoot = rootContainer.querySelector("#fieldOrdersSubContainer");
+      if (rcvRoot) {
+        renderFieldReceiving(rcvRoot, { initialSupplierId: supId, preloadOrderId: orderId });
+      }
+    });
+  });
+
+  subContainer.querySelectorAll(".btn-log-delete-ord").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const orderId = btn.dataset.order;
+      if (confirm("האם למחוק הזמנת רכש זו מיומן ההזמנות?")) {
+        store.deleteOrderLog(orderId);
+        renderFieldOrders(rootContainer);
+      }
+    });
+  });
 }
 
 function formatShortTime(ts) {

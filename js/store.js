@@ -17,6 +17,50 @@ class KitchenStore {
     this.hydrateFromServer();
   }
 
+  mergeRemoteState(remoteState) {
+    const prevOrders = Array.isArray(this.state?.logOrders) ? this.state.logOrders : [];
+    const prevDeliveries = Array.isArray(this.state?.logDeliveries) ? this.state.logDeliveries : [];
+    const prevSuppliers = Array.isArray(this.state?.suppliers) ? this.state.suppliers : [];
+
+    // שמור על הגדרות ערוץ הזמנה ופורטל ספק שנקבעו מקומית אם הגשר בענן טרם החזיר אותם
+    const mergedSuppliers = Array.isArray(remoteState.suppliers)
+      ? remoteState.suppliers.map(rs => {
+          const localSup = prevSuppliers.find(s => s.id === rs.id || s.name === rs.name);
+          const seedSup = (INITIAL_DATA.suppliers || []).find(s => s.id === rs.id || s.name === rs.name);
+          return {
+            ...(seedSup || {}),
+            ...(localSup || {}),
+            ...rs,
+            orderChannel: rs.orderChannel || localSup?.orderChannel || seedSup?.orderChannel || "WHATSAPP",
+            portalUrl: rs.portalUrl || localSup?.portalUrl || seedSup?.portalUrl || ""
+          };
+        })
+      : prevSuppliers;
+
+    // מיזוג logOrders כך שהזמנות מקומיות לא יימחקו אם גשר הענן עוד לא עודכן עם LOG_Orders
+    const remoteOrders = Array.isArray(remoteState.logOrders) ? remoteState.logOrders : [];
+    const orderIds = new Set(remoteOrders.map(o => o.id));
+    const mergedOrders = [
+      ...remoteOrders,
+      ...prevOrders.filter(o => o && o.id && !orderIds.has(o.id))
+    ];
+
+    const remoteDeliveries = Array.isArray(remoteState.logDeliveries) ? remoteState.logDeliveries : [];
+    const dlvIds = new Set(remoteDeliveries.map(d => d.id));
+    const mergedDeliveries = [
+      ...remoteDeliveries,
+      ...prevDeliveries.filter(d => d && d.id && !dlvIds.has(d.id))
+    ];
+
+    return {
+      ...INITIAL_DATA,
+      ...remoteState,
+      suppliers: mergedSuppliers,
+      logOrders: mergedOrders,
+      logDeliveries: mergedDeliveries
+    };
+  }
+
   async hydrateFromServer(forcePullSheets = false) {
     if (typeof window === "undefined" || typeof fetch === "undefined") return false;
 
@@ -31,10 +75,7 @@ class KitchenStore {
           const data = await res.json();
           const remoteState = data.state || data;
           if (remoteState && Array.isArray(remoteState.catalog)) {
-            this.state = {
-              ...INITIAL_DATA,
-              ...remoteState
-            };
+            this.state = this.mergeRemoteState(remoteState);
             localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(this.state));
             this.notify();
             return true;
@@ -53,10 +94,7 @@ class KitchenStore {
         if (res.ok) {
           const data = await res.json();
           if (data.state) {
-            this.state = {
-              ...INITIAL_DATA,
-              ...data.state
-            };
+            this.state = this.mergeRemoteState(data.state);
             localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(this.state));
             this.notify();
             return true;
@@ -77,10 +115,7 @@ class KitchenStore {
           const snapshot = await res.json();
           const remoteState = snapshot.state || snapshot;
           if (remoteState && Array.isArray(remoteState.catalog)) {
-            this.state = {
-              ...INITIAL_DATA,
-              ...remoteState
-            };
+            this.state = this.mergeRemoteState(remoteState);
             localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(this.state));
             this.notify();
             return true;

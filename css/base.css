@@ -1,0 +1,71 @@
+/**
+ * Base CSS — Reset, Typography, RTL Conventions, Focus & Accessibility
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+  direction: rtl;
+  text-align: right;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family-hebrew);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  line-height: var(--font-lineHeight-body);
+  font-size: var(--font-size-body);
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-interactive);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+
+/* Focus styles for keyboard accessibility */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Helper text & utilities */
+.text-dim { color: var(--color-text-dim); }
+.text-secondary { color: var(--color-text-secondary); }
+.font-strong { font-weight: var(--font-weight-strong); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }

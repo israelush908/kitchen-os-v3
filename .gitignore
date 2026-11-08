@@ -1,0 +1,10 @@
+credentials.json
+*.pem
+*.key
+.venv/
+.antigravity/
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+data/sync_log.jsonl

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Kitchen OS v3.0 — יקב בוטיק מרכז מבקרים</title>
+  <meta name="description" content="מערכת ניהול מטבח חכמה ודו-מצבית — ספירות שטח, הכנות, הזמנות וואטסאפ, פוד-קוסט ולייבור" />
+  <meta name="theme-color" content="#5A1827" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kitchen OS" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%235A1827%22/><text x=%2250%22 y=%2268%22 text-anchor=%22middle%22 font-size=%2258%22>🍷</text></svg>" />
+  
+  <!-- Design Tokens & Styles -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍷</text></svg>" />
+  <link rel="stylesheet" href="design/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/views.css" />
+</head>
+<body class="mode-field">
+  <div id="app">
+    <!-- ================= 1. GLOBAL HEADER ================= -->
+    <header class="global-header">
+      <div class="brand-section">
+        <span class="brand-logo">🍷</span>
+        <div>
+          <span class="brand-title">Kitchen OS</span>
+          <span class="brand-sub">v3.0</span>
+        </div>
+      </div>
+
+      <!-- מתג מצבים עליון: שטח מול משרד -->
+      <div class="header-center">
+        <div class="mode-switcher" role="radiogroup" aria-label="מצב מערכת">
+          <button class="mode-btn active" id="btnModeField" role="radio" aria-checked="true">
+            📱 שטח
+          </button>
+          <button class="mode-btn" id="btnModeOffice" role="radio" aria-checked="false">
+            🖥️ משרד
+          </button>
+        </div>
+      </div>
+
+      <!-- אינדיקציית סנכרון וזמן -->
+      <div class="header-actions">
+        <div class="sync-badge" id="syncStatusBadge" title="סטטוס סנכרון מול הענן">
+          <span class="sync-dot"></span>
+          <span class="sync-text">מסונכרן</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================= 2. MAIN VIEWPORT ================= -->
+    <main class="app-viewport">
+      <!-- 📱 FIELD MODE CONTAINER -->
+      <section class="field-container" id="fieldContainer" aria-label="מצב שטח מובייל">
+        <div class="field-content" id="fieldViewRoot">
+          <!-- התוכן של לשונית השטח הפעילה יוזרק כאן -->
+        </div>
+
+        <!-- סרגל ניווט תחתון קבוע לשטח -->
+        <nav class="field-bottom-nav" aria-label="סרגל ניווט שטח">
+          <button class="nav-tab active" data-view="inventory" id="tabFieldInventory">
+            <span class="tab-icon">📦</span>
+            <span>ספירת מלאי</span>
+          </button>
+          <button class="nav-tab" data-view="prep" id="tabFieldPrep">
+            <span class="tab-icon">🔪</span>
+            <span>הכנות וסרוויס</span>
+          </button>
+          <button class="nav-tab" data-view="orders" id="tabFieldOrders">
+            <span class="tab-icon">📲</span>
+            <span>הזמנות רכש</span>
+          </button>
+          <button class="nav-tab" data-view="waste" id="tabFieldWaste">
+            <span class="tab-icon">🗑️</span>
+            <span>דיווח פחת</span>
+          </button>
+        </nav>
+      </section>
+
+      <!-- 🖥️ OFFICE MODE CONTAINER -->
+      <section class="office-container" id="officeContainer" aria-label="מצב משרד דסקטופ">
+        <!-- סרגל צדדי של משרד -->
+        <aside class="office-sidebar" aria-label="תפריט מודולי משרד">
+          <ul class="sidebar-menu">
+            <li>
+              <button class="sidebar-item-btn active" data-view="dashboard" id="tabOfficeDashboard">
+                <span class="item-icon">📊</span>
+                <span>מרכז שליטה</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item-btn" data-view="studio" id="tabOfficeStudio">
+                <span class="item-icon">🍽️</span>
+                <span>סטודיו מתכונים</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item-btn" data-view="catalog" id="tabOfficeCatalog">
+                <span class="item-icon">🗂️</span>
+                <span>קטלוג ותקנים</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item-btn" data-view="deliveries" id="tabOfficeDeliveries">
+                <span class="item-icon">🚚</span>
+                <span>קבלת סחורה</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item-btn" data-view="prepManager" id="tabOfficePrepManager">
+                <span class="item-icon">🔪</span>
+                <span>בנק הכנות וצ'קליסטים</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item-btn" data-view="labor" id="tabOfficeLabor">
+                <span class="item-icon">👥</span>
+                <span>בקרת לייבור</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item-btn" data-view="logs" id="tabOfficeLogs">
+                <span class="item-icon">📜</span>
+                <span>מרכז לוגים והיסטוריה</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item-btn" data-view="settings" id="tabOfficeSettings">
+                <span class="item-icon">⚙️</span>
+                <span>הגדרות ויעדים</span>
+              </button>
+            </li>
+          </ul>
+
+          <div style="margin-top: auto; padding: var(--space-md); border-top: 1px solid var(--color-border-subtle); font-size: 11px; color: var(--color-text-dim);">
+            <div>מרכז מבקרים יקב</div>
+            <div class="mono" style="margin-top: 2px;">Kitchen OS v3.0 SPA</div>
+          </div>
+        </aside>
+
+        <!-- אזור תוכן משרד -->
+        <div class="office-content" id="officeViewRoot">
+          <!-- התוכן של מודול המשרד הפעיל יוזרק כאן -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Main JavaScript App Bootstrapper -->
+  <script type="module" src="js/app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+/**
+ * Views CSS — Dedicated styles for Field & Office modules
+ */
+
+/* ================= 1. FIELD INVENTORY VIEW ================= */
+.inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.inventory-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--space-md);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  gap: var(--space-sm);
+  transition: all var(--motion-duration-micro);
+}
+
+.inventory-item-card.deficit {
+  border-right: 4px solid var(--status-critical);
+  background-color: #fffbfb;
+}
+
+.inventory-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.inventory-item-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inventory-item-meta {
+  font-size: 12px;
+  color: var(--color-text-dim);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: 2px;
+}
+
+.search-bar-container {
+  margin-bottom: var(--space-sm);
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 14px;
+  padding-left: 36px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-interactive);
+  font-family: inherit;
+  font-size: 14px;
+  background-color: var(--color-bg-surface);
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-dim);
+  pointer-events: none;
+}
+
+/* ================= 2. FIELD PREP CHECKLIST ================= */
+.prep-progress-card {
+  background: linear-gradient(135deg, #1e1e1e, #2b2d42);
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.prep-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.progress-track {
+  height: 8px;
+  background-color: rgba(255,255,255,0.2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #10b981;
+  border-radius: var(--radius-full);
+  transition: width var(--motion-duration-component) ease;
+}
+
+.prep-task-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 14px;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-xs);
+  cursor: pointer;
+  transition: all var(--motion-duration-micro);
+  user-select: none;
+}
+
+.prep-task-card.done {
+  background-color: var(--color-bg-overlay);
+  opacity: 0.75;
+}
+
+.prep-task-card.done .task-name {
+  text-decoration: line-through;
+  color: var(--color-text-dim);
+}
+
+.task-checkbox {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-interactive);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: all var(--motion-duration-micro);
+}
+
+.prep-task-card.done .task-checkbox {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+/* ================= 3. FIELD ORDERS VIEW ================= */
+.supplier-order-card {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.order-items-list {
+  margin: var(--space-sm) 0;
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: var(--space-xs) 0;
+}
+
+.order-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+/* ================= 4. FIELD WASTE VIEW ================= */
+.waste-card {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+}
+
+.waste-cost-preview {
+  background-color: #fef2f2;
+  border: 1px dashed #f87171;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+.waste-cost-val {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-danger);
+}
+
+/* ================= 5. OFFICE DASHBOARD ================= */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.kpi-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 110px;
+}
+
+.kpi-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpi-title {
+  font-size: 13px;
+  color: var(--color-text-dim);
+  font-weight: 500;
+}
+
+.kpi-icon {
+  font-size: 20px;
+}
+
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 4px 0;
+}
+
+.kpi-footer {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ================= 6. OFFICE RECIPE STUDIO ================= */
+.studio-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: var(--space-lg);
+  height: calc(100vh - 120px);
+}
+
+.studio-master {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.studio-detail {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  overflow-y: auto;
+}
+
+.dish-list-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  cursor: pointer;
+  transition: background var(--motion-duration-micro);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dish-list-item:hover {
+  background-color: var(--color-bg-cardHover);
+}
+
+.dish-list-item.active {
+  background-color: var(--color-bg-cardSelected);
+  border-right: 4px solid var(--color-accent-primary);
+}
+
+.bom-card {
+  margin-top: var(--space-md);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.bom-header {
+  background-color: #f8f9fa;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Matrix classification tags */
+.matrix-star { background-color: #fef08a; color: #854d0e; }
+.matrix-plowhorse { background-color: #fed7aa; color: #9a3412; }
+.matrix-puzzle { background-color: #e0e7ff; color: #3730a3; }
+.matrix-dog { background-color: #fee2e2; color: #991b1b; }

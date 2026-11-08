@@ -110,3 +110,4 @@ def reset_accumulated_data():
 
 if __name__ == "__main__":
     reset_accumulated_data()
+

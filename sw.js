@@ -4,7 +4,7 @@
  * even inside walk-in coolers without reception or when the PC is turned off.
  */
 
-const CACHE_NAME = "kitchen-os-v3-cloud-v2";
+const CACHE_NAME = "kitchen-os-v3-cloud-v3";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -24,6 +24,7 @@ const CORE_ASSETS = [
   "./js/views/fieldInventory.js",
   "./js/views/fieldPrep.js",
   "./js/views/fieldOrders.js",
+  "./js/views/fieldReceiving.js",
   "./js/views/fieldWaste.js",
   "./js/views/officeDashboard.js",
   "./js/views/officeStudio.js",

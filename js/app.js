@@ -39,8 +39,17 @@ class KitchenApp {
     // החל מצב התחלתי
     this.setMode(this.currentMode);
 
-    // האזנה לשינויים בסטור ורינדור מחדש
+    // האזנה לשינויים בסטור ורינדור מחדש (כולל הגנה על שדה קלט פעיל בזמן הקלדה)
     store.subscribe(() => {
+      const activeEl = document.activeElement;
+      const isTypingInTextInput = activeEl && (
+        activeEl.tagName === "TEXTAREA" ||
+        (activeEl.tagName === "INPUT" && ["text", "search", "url", "number"].includes(activeEl.type) && !activeEl.classList.contains("stepper-input"))
+      );
+      if (isTypingInTextInput && document.querySelector(".modal-backdrop")) {
+        // אל תדרוס מודאל פתוח בזמן שהמשתמש מקליד בו
+        return;
+      }
       this.renderCurrentView();
     });
   }
@@ -107,19 +116,25 @@ class KitchenApp {
     const updateSyncUI = (status) => {
       if (!badge) return;
       badge.classList.remove("offline", "pending");
-      const dot = badge.querySelector(".sync-dot");
       const text = badge.querySelector(".sync-text");
 
       if (!status.isOnline) {
         badge.classList.add("offline");
-        text.textContent = "שמור מקומית";
-      } else if (status.pendingCount > 0) {
+        text.textContent = "אופליין (שמור מקומית)";
+      } else if (status.isSyncingNow || status.pendingCount > 0) {
         badge.classList.add("pending");
-        text.textContent = `מסנכרן (${status.pendingCount})`;
+        text.textContent = `מסנכרן חי...`;
       } else {
-        text.textContent = "מסונכרן";
+        text.textContent = `חי בזמן אמת · ${status.lastSync || ''}`;
       }
     };
+
+    badge.style.cursor = "pointer";
+    badge.title = "לחץ לסנכרון מיידי מול הענן / השרת";
+    badge.addEventListener("click", async () => {
+      await SyncService.flushQueue(store.getState());
+      await store.hydrateFromServer(false);
+    });
 
     SyncService.subscribe(updateSyncUI);
     updateSyncUI(SyncService.getStatus());

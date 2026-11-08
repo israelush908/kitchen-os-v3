@@ -74,11 +74,17 @@ def get_initial_or_synced_state(force_pull_sheets=False):
             print(f"[Sheets Sync] Pulling live state from Google Sheets ({NEW_SPREADSHEET_ID})...")
             sheets_state = pull_full_state_from_sheets()
             if local_state:
-                # Preserve local daily labor or deliveries if Sheets doesn't have them yet
+                # Preserve local daily labor, orders, or deliveries if Sheets doesn't have them yet
                 if not sheets_state.get("logLaborDaily") and local_state.get("logLaborDaily"):
                     sheets_state["logLaborDaily"] = local_state["logLaborDaily"]
+                if not sheets_state.get("logOrders") and local_state.get("logOrders"):
+                    sheets_state["logOrders"] = local_state["logOrders"]
                 if not sheets_state.get("logDeliveries") and local_state.get("logDeliveries"):
                     sheets_state["logDeliveries"] = local_state["logDeliveries"]
+                if local_state.get("_revision"):
+                    sheets_state["_revision"] = local_state["_revision"]
+                if local_state.get("_updatedByClient"):
+                    sheets_state["_updatedByClient"] = local_state["_updatedByClient"]
             save_local_db(sheets_state)
             print(f"[Sheets Sync] Pulled {len(sheets_state.get('catalog', []))} items, {len(sheets_state.get('suppliers', []))} suppliers, {len(sheets_state.get('dishes', []))} dishes.")
             return sheets_state
@@ -104,11 +110,13 @@ class KitchenHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path == "/api/state":
+        clean_path = self.path.split("?")[0]
+        if clean_path == "/api/state":
             db_data = get_initial_or_synced_state(force_pull_sheets=False)
             payload = json.dumps({
                 "status": "ok",
                 "hasState": db_data is not None,
+                "revision": db_data.get("_revision", 0) if isinstance(db_data, dict) else 0,
                 "sheetsConnected": SHEETS_AVAILABLE,
                 "spreadsheetId": NEW_SPREADSHEET_ID,
                 "state": db_data
@@ -120,7 +128,7 @@ class KitchenHandler(SimpleHTTPRequestHandler):
             self.wfile.write(payload)
             return
 
-        if self.path == "/api/sheets/pull":
+        if clean_path == "/api/sheets/pull":
             db_data = get_initial_or_synced_state(force_pull_sheets=True)
             payload = json.dumps({
                 "status": "ok" if db_data else "error",

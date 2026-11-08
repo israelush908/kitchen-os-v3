@@ -187,7 +187,7 @@ export function renderFieldInventory(container) {
     });
   });
 
-  // כפתורי פלוס ומינוס
+  // כפתורי פלוס ומינוס — כל לחיצה מעדכנת מיד גם בזמן אמת (Live Real-Time Sync) וגם נשמרת לאישור אצווה
   container.querySelectorAll(".btn-plus").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
@@ -199,6 +199,7 @@ export function renderFieldInventory(container) {
       const row = container.querySelector(`.inventory-item-card[data-id="${id}"]`);
       if (row) row.classList.add("modified");
       updateFloatingButton(container);
+      store.updateSingleItemStockLive(id, val, "ישראל - שטח");
     });
   });
 
@@ -213,6 +214,7 @@ export function renderFieldInventory(container) {
       const row = container.querySelector(`.inventory-item-card[data-id="${id}"]`);
       if (row) row.classList.add("modified");
       updateFloatingButton(container);
+      store.updateSingleItemStockLive(id, val, "ישראל - שטח");
     });
   });
 
@@ -225,6 +227,7 @@ export function renderFieldInventory(container) {
       const row = container.querySelector(`.inventory-item-card[data-id="${id}"]`);
       if (row) row.classList.add("modified");
       updateFloatingButton(container);
+      store.updateSingleItemStockLive(id, val, "ישראל - שטח");
     });
   });
 

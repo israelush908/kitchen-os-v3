@@ -4,7 +4,7 @@
  * even inside walk-in coolers without reception or when the PC is turned off.
  */
 
-const CACHE_NAME = "kitchen-os-v3-cloud-v5";
+const CACHE_NAME = "kitchen-os-v3-cloud-v6";
 const CORE_ASSETS = [
   "./",
   "./index.html",

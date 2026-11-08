@@ -140,6 +140,27 @@ export function renderOfficeSettings(container) {
             </div>
 
             <div class="form-group" style="margin-bottom: var(--space-md);">
+              <label class="form-label" style="font-size: 12px;">⚡ כתובת Firebase Realtime Database (אופציונלי — לסנכרון ענן בפחות מ-100ms)</label>
+              <div style="display: flex; gap: var(--space-xs);">
+                <input
+                  type="url"
+                  class="form-input mono"
+                  id="cfgFirebaseUrl"
+                  dir="ltr"
+                  placeholder="https://your-project-default-rtdb.firebaseio.com"
+                  value="${syncStatus.firebaseUrl || ''}"
+                  style="font-size: 12px;"
+                />
+                <button type="button" class="btn btn-secondary" id="btnSaveFirebaseUrl" style="white-space: nowrap;">
+                  שמור Firebase
+                </button>
+              </div>
+              <div style="font-size: 11px; color: var(--color-text-dim); margin-top: 4px;">
+                אם מוגדר, כל לחיצה מסתנכרנת בזמן אמת מול Firebase לצד גיליון ה-Google Sheets.
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: var(--space-md);">
               <label class="form-label" style="font-size: 12px;">🔗 כתובת גשר ענן חי 24/7 ל-Google Sheets (Google Apps Script Web App URL)</label>
               <div style="display: flex; gap: var(--space-xs);">
                 <input
@@ -240,6 +261,20 @@ export function renderOfficeSettings(container) {
       alert("✅ הנתונים אופסו לברירת המחדל בהצלחה!");
       renderOfficeSettings(container);
     }
+  });
+
+  // Save Firebase Realtime URL
+  container.querySelector("#btnSaveFirebaseUrl")?.addEventListener("click", async () => {
+    const urlInput = container.querySelector("#cfgFirebaseUrl");
+    const urlVal = urlInput ? urlInput.value.trim() : "";
+    SyncService.setFirebaseUrl(urlVal);
+    if (urlVal) {
+      await SyncService.flushQueue(store.getState());
+      alert("⚡ כתובת Firebase Realtime נשמרה והנתונים סונכרנו אליה בהצלחה!");
+    } else {
+      alert("ℹ️ כתובת Firebase הוסרה.");
+    }
+    renderOfficeSettings(container);
   });
 
   // Save Cloud Bridge URL

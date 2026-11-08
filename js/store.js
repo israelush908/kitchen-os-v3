@@ -14,7 +14,36 @@ class KitchenStore {
   constructor() {
     this.state = this.loadState();
     this.subscribers = [];
+    this.setupRealtimeListeners();
     this.hydrateFromServer();
+  }
+
+  setupRealtimeListeners() {
+    if (typeof window === "undefined") return;
+
+    // 1. האזנה לעדכוני זמן-אמת מטאבים אחרים (BroadcastChannel) או מהבק-אנד (Firebase / Cloud Bridge / Local Server)
+    SyncService.onRemoteStateUpdate((remoteState) => {
+      if (!remoteState || !Array.isArray(remoteState.catalog)) return;
+      this.state = this.mergeRemoteState(remoteState);
+      try {
+        localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(this.state));
+      } catch (e) {}
+      this.notify();
+    });
+
+    // 2. האזנה לאירועי LocalStorage בין חלונות באותו דפדפן (גיבוי ל-BroadcastChannel)
+    window.addEventListener("storage", (ev) => {
+      if (ev.key === STATE_STORAGE_KEY && ev.newValue) {
+        try {
+          const parsed = JSON.parse(ev.newValue);
+          if (parsed && Number(parsed._revision || 0) > Number(this.state._revision || 0)) {
+            this.state = this.mergeRemoteState(parsed);
+            SyncService.lastKnownRevision = Math.max(SyncService.lastKnownRevision, Number(this.state._revision) || 0);
+            this.notify();
+          }
+        } catch (e) {}
+      }
+    });
   }
 
   mergeRemoteState(remoteState) {
@@ -64,7 +93,28 @@ class KitchenStore {
   async hydrateFromServer(forcePullSheets = false) {
     if (typeof window === "undefined" || typeof fetch === "undefined") return false;
 
+    const firebaseUrl = SyncService.getFirebaseUrl();
     const cloudUrl = SyncService.getCloudBridgeUrl();
+
+    // 0. אם מוגדר Firebase Realtime Database, משוך ממנו בעדיפות ראשונה
+    if (firebaseUrl) {
+      try {
+        const fbRes = await fetch(`${firebaseUrl}/kitchen_os_v3.json?t=${Date.now()}`);
+        if (fbRes.ok) {
+          const fbData = await fbRes.json();
+          const remoteState = fbData?.state || fbData;
+          if (remoteState && Array.isArray(remoteState.catalog)) {
+            this.state = this.mergeRemoteState(remoteState);
+            SyncService.lastKnownRevision = Math.max(SyncService.lastKnownRevision, Number(this.state._revision) || 0);
+            localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(this.state));
+            this.notify();
+            return true;
+          }
+        }
+      } catch (fbErr) {
+        console.warn("[Store] Firebase RTDB pull fallback:", fbErr);
+      }
+    }
 
     // 1. אם מוגדר גשר ענן חי (Google Apps Script Web App), משוך ישירות מ-Google Sheets בענן 24/7
     if (cloudUrl) {
@@ -76,6 +126,7 @@ class KitchenStore {
           const remoteState = data.state || data;
           if (remoteState && Array.isArray(remoteState.catalog)) {
             this.state = this.mergeRemoteState(remoteState);
+            SyncService.lastKnownRevision = Math.max(SyncService.lastKnownRevision, Number(this.state._revision) || 0);
             localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(this.state));
             this.notify();
             return true;
@@ -95,6 +146,7 @@ class KitchenStore {
           const data = await res.json();
           if (data.state) {
             this.state = this.mergeRemoteState(data.state);
+            SyncService.lastKnownRevision = Math.max(SyncService.lastKnownRevision, Number(this.state._revision) || 0);
             localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(this.state));
             this.notify();
             return true;
@@ -146,12 +198,22 @@ class KitchenStore {
         return JSON.parse(JSON.stringify(INITIAL_DATA));
       }
 
-      saveState() {
+      saveState(actionType = "STATE_MUTATION", actionPayload = {}) {
+        const nowMs = Date.now();
+        const prevRev = Number(this.state._revision) || 0;
+        this.state._revision = Math.max(nowMs, prevRev + 1);
+        this.state._lastModified = new Date(nowMs).toISOString();
+        this.state._updatedByClient = SyncService.getClientId();
+        SyncService.lastKnownRevision = this.state._revision;
+
         try {
           localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(this.state));
         } catch (e) {
           console.error("[Store] Failed to save state to LocalStorage:", e);
         }
+
+        // שדר מיד לטאבים מקבילים (0ms)
+        SyncService.broadcastLocalState(this.state, actionType);
         this.notify();
       }
 
@@ -212,13 +274,32 @@ class KitchenStore {
 
         this.state.catalog = updatedCatalog;
         this.state.logCounts = [...newLogs, ...(this.state.logCounts || [])];
-        this.saveState();
+        this.saveState("COUNTS_BATCH_SAVED", { countsCount: newLogs.length });
 
         SyncService.enqueue("COUNTS_BATCH_SAVED", {
           countsCount: newLogs.length,
           reporter,
           logs: newLogs
+        }, this.state);
+      }
+
+      /**
+       * עדכון מיידי של פריט בודד בספירת מלאי (כל לחיצה על + / - מעדכנת בק-אנד ופרונט-אנד בזמן אמת)
+       */
+      updateSingleItemStockLive(itemId, nextQty, reporter = "צוות מטבח") {
+        const cleanQty = Math.max(0, Number(nextQty) || 0);
+        this.state.catalog = this.state.catalog.map(item => {
+          if (item.id === itemId) {
+            return {
+              ...item,
+              currentStock: cleanQty,
+              lastCountDate: new Date().toISOString()
+            };
+          }
+          return item;
         });
+        this.saveState("LIVE_STOCK_STEP", { itemId, countedQty: cleanQty, reporter });
+        SyncService.enqueue("LIVE_STOCK_STEP", { itemId, countedQty: cleanQty, reporter }, this.state);
       }
 
       /**
@@ -238,9 +319,9 @@ class KitchenStore {
 
         this.state.catalog = this.state.catalog.map(c => c.id === itemId ? updatedItem : c);
         this.state.logWaste = [logEntry, ...(this.state.logWaste || [])];
-        this.saveState();
+        this.saveState("WASTE_LOGGED", logEntry);
 
-        SyncService.enqueue("WASTE_LOGGED", logEntry);
+        SyncService.enqueue("WASTE_LOGGED", logEntry, this.state);
         return logEntry;
       }
 
@@ -248,66 +329,70 @@ class KitchenStore {
        * סימון משימת הכנה בעמדה כהושלמה / פתוחה (Field Mode)
        */
       togglePrepTask(taskId) {
+        let nextDoneState = false;
         this.state.prepChecklist = this.state.prepChecklist.map(task => {
           if (task.id === taskId) {
-            const nextDone = !task.doneToday;
-            SyncService.enqueue("PREP_TASK_TOGGLED", { taskId, doneToday: nextDone });
-            return { ...task, doneToday: nextDone };
+            nextDoneState = !task.doneToday;
+            return { ...task, doneToday: nextDoneState };
           }
           return task;
         });
-        this.saveState();
+        this.saveState("PREP_TASK_TOGGLED", { taskId, doneToday: nextDoneState });
+        SyncService.enqueue("PREP_TASK_TOGGLED", { taskId, doneToday: nextDoneState }, this.state);
       }
 
       /**
        * עדכון או הוספת מנה בסטודיו (Office Mode)
        */
       saveDish(dishData) {
+        let actionType = "DISH_UPDATED";
         if (!dishData.id) {
           dishData.id = `DSH-${(this.state.dishes.length + 1).toString().padStart(2, "0")}`;
           this.state.dishes.push(dishData);
-          SyncService.enqueue("DISH_CREATED", dishData);
+          actionType = "DISH_CREATED";
         } else {
           this.state.dishes = this.state.dishes.map(d => d.id === dishData.id ? { ...d, ...dishData } : d);
-          SyncService.enqueue("DISH_UPDATED", dishData);
         }
-        this.saveState();
+        this.saveState(actionType, dishData);
+        SyncService.enqueue(actionType, dishData, this.state);
         return dishData;
       }
 
       deleteDish(dishId) {
         this.state.dishes = this.state.dishes.filter(d => d.id !== dishId);
         this.state.recipeLines = this.state.recipeLines.filter(l => l.parentDishId !== dishId);
-        this.saveState();
-        SyncService.enqueue("DISH_DELETED", { dishId });
+        this.saveState("DISH_DELETED", { dishId });
+        SyncService.enqueue("DISH_DELETED", { dishId }, this.state);
       }
 
       /**
        * הוספת או עריכת שורת מרכיב ב-BOM (Office Mode)
        */
       saveRecipeLine(lineData) {
+        let actionType = "RECIPE_LINE_UPDATED";
         if (!lineData.id) {
           lineData.id = `RL-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
           this.state.recipeLines.push(lineData);
-          SyncService.enqueue("RECIPE_LINE_ADDED", lineData);
+          actionType = "RECIPE_LINE_ADDED";
         } else {
           this.state.recipeLines = this.state.recipeLines.map(l => l.id === lineData.id ? { ...l, ...lineData } : l);
-          SyncService.enqueue("RECIPE_LINE_UPDATED", lineData);
         }
-        this.saveState();
+        this.saveState(actionType, lineData);
+        SyncService.enqueue(actionType, lineData, this.state);
         return lineData;
       }
 
       deleteRecipeLine(lineId) {
         this.state.recipeLines = this.state.recipeLines.filter(l => l.id !== lineId);
-        this.saveState();
-        SyncService.enqueue("RECIPE_LINE_DELETED", { lineId });
+        this.saveState("RECIPE_LINE_DELETED", { lineId });
+        SyncService.enqueue("RECIPE_LINE_DELETED", { lineId }, this.state);
       }
 
       /**
        * שמירת חומר גלם בקטלוג (Office Mode)
        */
       saveCatalogItem(itemData) {
+        let actionType = "CATALOG_ITEM_UPDATED";
         if (!itemData.id) {
           const nextNum = (this.state.catalog.length + 1).toString().padStart(3, "0");
           itemData.id = `ITM-${nextNum}`;
@@ -316,12 +401,12 @@ class KitchenStore {
           itemData.inWasteForm = itemData.inWasteForm ?? true;
           itemData.currentStock = Number(itemData.currentStock) || 0;
           this.state.catalog.push(itemData);
-          SyncService.enqueue("CATALOG_ITEM_CREATED", itemData);
+          actionType = "CATALOG_ITEM_CREATED";
         } else {
           this.state.catalog = this.state.catalog.map(c => c.id === itemData.id ? { ...c, ...itemData } : c);
-          SyncService.enqueue("CATALOG_ITEM_UPDATED", itemData);
         }
-        this.saveState();
+        this.saveState(actionType, itemData);
+        SyncService.enqueue(actionType, itemData, this.state);
         return itemData;
       }
 
@@ -329,17 +414,18 @@ class KitchenStore {
        * שמירת ספק (Office Mode)
        */
       saveSupplier(supData) {
+        let actionType = "SUPPLIER_UPDATED";
         if (!supData.id) {
           const nextNum = (this.state.suppliers.length + 1).toString().padStart(2, "0");
           supData.id = `SUP-${nextNum}`;
           supData.isActive = supData.isActive ?? true;
           this.state.suppliers.push(supData);
-          SyncService.enqueue("SUPPLIER_CREATED", supData);
+          actionType = "SUPPLIER_CREATED";
         } else {
           this.state.suppliers = this.state.suppliers.map(s => s.id === supData.id ? { ...s, ...supData } : s);
-          SyncService.enqueue("SUPPLIER_UPDATED", supData);
         }
-        this.saveState();
+        this.saveState(actionType, supData);
+        SyncService.enqueue(actionType, supData, this.state);
         return supData;
       }
 
@@ -503,34 +589,37 @@ class KitchenStore {
        * ניהול משימות מנהל
        */
       toggleManagerTask(taskId) {
+        let nextStatus = "לביצוע";
         this.state.managerTasks = this.state.managerTasks.map(t => {
           if (t.id === taskId) {
-            const nextStatus = t.status === "הושלם" ? "לביצוע" : "הושלם";
+            nextStatus = t.status === "הושלם" ? "לביצוע" : "הושלם";
             return { ...t, status: nextStatus };
           }
           return t;
         });
-        this.saveState();
+        this.saveState("MANAGER_TASK_TOGGLED", { taskId, status: nextStatus });
+        SyncService.enqueue("MANAGER_TASK_TOGGLED", { taskId, status: nextStatus }, this.state);
       }
 
       saveManagerTask(taskData) {
+        let actionType = "MANAGER_TASK_UPDATED";
         if (!taskData.id) {
           taskData.id = `TSK-${(this.state.managerTasks.length + 1).toString().padStart(2, "0")}`;
           taskData.status = taskData.status || "לביצוע";
           this.state.managerTasks.unshift(taskData);
-          SyncService.enqueue("MANAGER_TASK_CREATED", taskData);
+          actionType = "MANAGER_TASK_CREATED";
         } else {
           this.state.managerTasks = this.state.managerTasks.map(t => t.id === taskData.id ? { ...t, ...taskData } : t);
-          SyncService.enqueue("MANAGER_TASK_UPDATED", taskData);
         }
-        this.saveState();
+        this.saveState(actionType, taskData);
+        SyncService.enqueue(actionType, taskData, this.state);
         return taskData;
       }
 
       deleteManagerTask(taskId) {
         this.state.managerTasks = (this.state.managerTasks || []).filter(t => t.id !== taskId);
-        this.saveState();
-        SyncService.enqueue("MANAGER_TASK_DELETED", { taskId });
+        this.saveState("MANAGER_TASK_DELETED", { taskId });
+        SyncService.enqueue("MANAGER_TASK_DELETED", { taskId }, this.state);
       }
 
       // ================= PURCHASE ORDERS & DELIVERIES (הזמנות רכש וקבלת סחורה) =================
@@ -586,9 +675,9 @@ class KitchenStore {
 
         if (!this.state.logOrders) this.state.logOrders = [];
         this.state.logOrders = [orderEntry, ...this.state.logOrders];
-        this.saveState();
+        this.saveState("ORDER_RECORDED", orderEntry);
 
-        SyncService.enqueue("ORDER_RECORDED", orderEntry);
+        SyncService.enqueue("ORDER_RECORDED", orderEntry, this.state);
         return orderEntry;
       }
 
@@ -597,8 +686,8 @@ class KitchenStore {
        */
       deleteOrderLog(orderId) {
         this.state.logOrders = (this.state.logOrders || []).filter(o => o.id !== orderId);
-        this.saveState();
-        SyncService.enqueue("ORDER_LOG_DELETED", { orderId });
+        this.saveState("ORDER_LOG_DELETED", { orderId });
+        SyncService.enqueue("ORDER_LOG_DELETED", { orderId }, this.state);
       }
 
       /**
@@ -640,9 +729,9 @@ class KitchenStore {
 
         this.state.catalog = updatedCatalog;
         this.state.logDeliveries = [deliveryEntry, ...(this.state.logDeliveries || [])];
-        this.saveState();
+        this.saveState("DELIVERY_RECORDED", deliveryEntry);
 
-        SyncService.enqueue("DELIVERY_RECORDED", deliveryEntry);
+        SyncService.enqueue("DELIVERY_RECORDED", deliveryEntry, this.state);
         return deliveryEntry;
       }
 
@@ -681,28 +770,29 @@ class KitchenStore {
         }
 
         this.state.logDeliveries = list.filter(d => d.id !== deliveryId);
-        this.saveState();
-        SyncService.enqueue("DELIVERY_LOG_DELETED", { deliveryId, revertStock });
+        this.saveState("DELIVERY_LOG_DELETED", { deliveryId, revertStock });
+        SyncService.enqueue("DELIVERY_LOG_DELETED", { deliveryId, revertStock }, this.state);
       }
 
       // ================= PREP CHECKLIST BANK (ניהול בנק הכנות וצ'קליסטים) =================
 
       savePrepTask(taskData) {
         if (!this.state.prepChecklist) this.state.prepChecklist = [];
+        let actionType = "PREP_TASK_UPDATED";
         if (!taskData.id) {
           const nextNum = (this.state.prepChecklist.length + 1).toString().padStart(2, "0");
           taskData.id = `PREP-${nextNum}-${Math.random().toString(36).substr(2, 3)}`;
           taskData.doneToday = taskData.doneToday ?? false;
           taskData.estMinutes = Number(taskData.estMinutes) || 15;
           this.state.prepChecklist.push(taskData);
-          SyncService.enqueue("PREP_TASK_CREATED", taskData);
+          actionType = "PREP_TASK_CREATED";
         } else {
           this.state.prepChecklist = this.state.prepChecklist.map(t =>
             t.id === taskData.id ? { ...t, ...taskData, estMinutes: Number(taskData.estMinutes) || 15 } : t
           );
-          SyncService.enqueue("PREP_TASK_UPDATED", taskData);
         }
-        this.saveState();
+        this.saveState(actionType, taskData);
+        SyncService.enqueue(actionType, taskData, this.state);
         return taskData;
       }
 

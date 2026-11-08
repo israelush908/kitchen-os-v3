@@ -39,19 +39,81 @@ function toNum(val, fallback) {
 }
 
 /**
- * GET Endpoint — Pulls full live state from Google Sheets to iPhone / Desktop
+ * GET Endpoint — Pulls full live state or checks fast real-time revision from Google Sheets to iPhone / Desktop
  */
 function doGet(e) {
   try {
+    var action = (e && e.parameter && e.parameter.action) ? String(e.parameter.action) : "pull";
+    var sinceRev = (e && e.parameter && e.parameter.since) ? Number(e.parameter.since) : 0;
+
+    if (action === "check") {
+      var rtSnap = readRealtimeSnapshot();
+      if (rtSnap && rtSnap.revision > sinceRev && rtSnap.state) {
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            status: "ok",
+            changed: true,
+            revision: rtSnap.revision,
+            state: rtSnap.state,
+            timestamp: new Date().toISOString()
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          status: "ok",
+          changed: false,
+          revision: rtSnap ? rtSnap.revision : sinceRev,
+          timestamp: new Date().toISOString()
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     var state = pullFullState();
     return ContentService
-      .createTextOutput(JSON.stringify({ status: "ok", state: state, timestamp: new Date().toISOString() }))
+      .createTextOutput(JSON.stringify({
+        status: "ok",
+        revision: state._revision || 0,
+        state: state,
+        timestamp: new Date().toISOString()
+      }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService
       .createTextOutput(JSON.stringify({ status: "error", message: String(err) }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+function readRealtimeSnapshot() {
+  var ss = getSpreadsheet();
+  var sh = ss.getSheetByName("SYS_Realtime_State");
+  if (!sh) return null;
+  var vals = sh.getRange(2, 1, 1, 3).getValues();
+  if (!vals || !vals[0] || !vals[0][2]) return null;
+  try {
+    var rev = Number(vals[0][0]) || 0;
+    var parsed = JSON.parse(String(vals[0][2]));
+    return { revision: rev, lastModified: String(vals[0][1] || ""), state: parsed };
+  } catch (e) {
+    return null;
+  }
+}
+
+function writeRealtimeSnapshot(state) {
+  if (!state) return;
+  try {
+    var ss = getSpreadsheet();
+    var sh = ss.getSheetByName("SYS_Realtime_State");
+    if (!sh) {
+      sh = ss.insertSheet("SYS_Realtime_State");
+      sh.setRightToLeft(true);
+      sh.appendRow(["Revision", "LastModified", "FullState_JSON"]);
+    }
+    var rev = Number(state._revision) || new Date().getTime();
+    var mod = state._lastModified || new Date().toISOString();
+    sh.getRange(2, 1, 1, 3).setValues([[rev, mod, JSON.stringify(state)]]);
+  } catch (e) {}
 }
 
 /**
@@ -392,7 +454,11 @@ function pullFullState() {
     });
   }
 
-  return {
+  var rtSnap = readRealtimeSnapshot();
+  var baseState = {
+    _revision: rtSnap ? rtSnap.revision : 0,
+    _lastModified: rtSnap ? rtSnap.lastModified : new Date().toISOString(),
+    _updatedByClient: (rtSnap && rtSnap.state && rtSnap.state._updatedByClient) ? rtSnap.state._updatedByClient : "",
     config: config,
     suppliers: suppliers,
     catalog: catalog,
@@ -404,14 +470,28 @@ function pullFullState() {
     logWaste: logWaste,
     logLabor: logLabor,
     logLaborDaily: logLaborDaily,
-    logOrders: logOrders,
+    logOrders: (rtSnap && rtSnap.state && Array.isArray(rtSnap.state.logOrders) && rtSnap.state.logOrders.length > logOrders.length)
+      ? rtSnap.state.logOrders
+      : logOrders,
     logDeliveries: logDeliveries
   };
+
+  // אם קיים Snapshot זמן אמת עדכני ב-SYS_Realtime_State, נמזג ממנו את המלאי החי ומצב ההכנות
+  if (rtSnap && rtSnap.state && Array.isArray(rtSnap.state.catalog)) {
+    return rtSnap.state;
+  }
+
+  return baseState;
 }
 
 function pushStateToSheets(state, actions) {
   var ss = getSpreadsheet();
   actions = actions || [];
+
+  // 0. שמור מיד את ה-State המלא ל-SYS_Realtime_State לסנכרון מיידי בזמן אמת בין מכשירים!
+  if (state) {
+    writeRealtimeSnapshot(state);
+  }
 
   // 1. Append incremental logs (Counts, Waste, Deliveries)
   var shCounts = ss.getSheetByName("LOG_Counts");

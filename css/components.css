@@ -1,32 +1,26 @@
 /**
- * Components CSS — Cards, Steppers, Buttons, Badges, Tables, Modals, Drawers, Filter Pills, Skeletons
+ * Components CSS — Cards, Steppers, Buttons, Badges, Tables, Modals, Bottom Sheet, Filter Pills, Skeletons
+ * Aesthetic: Swiss Kitchen Editorial
  */
 
 /* ================= 1. CARDS ================= */
 .card {
   background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
+  border: var(--border-structural);
+  border-radius: var(--radius-ticket);
   padding: var(--space-md);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-  transition: transform var(--motion-duration-micro) var(--motion-easing-standard),
-              box-shadow var(--motion-duration-micro) var(--motion-easing-standard);
-}
-
-.card:hover {
-  border-color: var(--color-border-interactive);
 }
 
 .card-title {
-  font-size: var(--font-size-heading);
-  font-weight: 600;
+  font-size: var(--font-size-subheading);
+  font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: var(--space-xs);
 }
 
 .card-subtitle {
   font-size: var(--font-size-caption);
-  color: var(--color-text-dim);
+  color: var(--color-text-secondary);
 }
 
 /* ================= 2. BUTTONS ================= */
@@ -34,27 +28,31 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-xs);
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-ticket);
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: all var(--motion-duration-micro) var(--motion-easing-standard);
+  border: var(--border-structural);
+  transition: background-color var(--motion-duration-micro) var(--motion-easing-standard),
+              transform var(--motion-duration-micro) var(--motion-easing-standard),
+              box-shadow var(--motion-duration-micro) var(--motion-easing-standard);
   text-decoration: none;
-  min-height: 40px;
+  min-height: 48px; /* Mobile touch target >= 48dp (R20) */
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: translate(1px, 1px);
+  box-shadow: none !important;
 }
 
 .btn-primary {
-  background-color: var(--color-accent-primary);
-  color: var(--color-text-onAccent);
-  border-color: var(--color-accent-primary);
+  background-color: var(--color-accent-vermilion);
+  color: #FFFFFF;
+  border: var(--border-structural);
+  box-shadow: var(--shadow-stamp);
 }
 
 .btn-primary:hover {
@@ -62,139 +60,210 @@
 }
 
 .btn-secondary {
-  background-color: var(--color-bg-overlay);
-  color: var(--color-text-primary);
-  border-color: var(--color-border-subtle);
+  background-color: var(--color-bg-surface);
+  color: var(--color-ink-primary);
+  border: var(--border-structural);
+  box-shadow: var(--shadow-stamp);
 }
 
 .btn-secondary:hover {
-  background-color: var(--color-bg-cardSelected);
-  border-color: var(--color-border-interactive);
+  background-color: var(--color-bg-cardHover);
 }
 
 .btn-whatsapp {
-  background-color: #25D366;
-  color: #ffffff;
-  font-weight: 600;
+  background-color: var(--color-accent-vermilion);
+  color: #FFFFFF;
+  border: var(--border-structural);
+  box-shadow: var(--shadow-stamp);
+  font-weight: 700;
 }
 
 .btn-whatsapp:hover {
-  background-color: #20ba5a;
+  background-color: var(--color-accent-hover);
 }
 
 .btn-danger {
-  background-color: #fee2e2;
-  color: var(--color-danger);
-  border-color: #fecaca;
+  background-color: var(--status-critical-bg);
+  color: var(--status-critical);
+  border: 1.5px solid var(--status-critical);
 }
 
 .btn-danger:hover {
-  background-color: #fecaca;
+  background-color: #FECACA;
 }
 
-.btn-floating {
+/* Docked Sticky Primary CTA Bar above Field Bottom Nav (R11, REQ-05) */
+.field-sticky-cta-bar {
   position: fixed;
-  bottom: 80px;
-  left: 20px;
-  right: 20px;
-  max-width: 480px;
-  margin: 0 auto;
-  box-shadow: 0 4px 14px rgba(90, 24, 39, 0.35);
-  font-size: 15px;
-  padding: 12px 24px;
-  z-index: 80;
-  border-radius: var(--radius-full);
+  bottom: 68px;
+  left: 0;
+  right: 0;
+  background-color: var(--color-bg-base);
+  border-top: var(--border-structural);
+  padding: 10px 16px;
+  z-index: 88;
+  display: flex;
+  justify-content: center;
 }
 
-/* ================= 3. STEPPERS (+ / -) ================= */
+.field-sticky-cta-bar .btn-floating,
+.btn-floating {
+  width: 100%;
+  max-width: 528px;
+  min-height: 52px;
+  background-color: var(--color-accent-vermilion);
+  color: #FFFFFF;
+  border: var(--border-structural);
+  border-radius: var(--radius-ticket);
+  box-shadow: var(--shadow-stamp);
+  font-size: 16px;
+  font-weight: 700;
+  padding: 12px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ================= 3. STEPPERS (+ / -) (REQ-04, R20) ================= */
 .stepper-container {
   display: inline-flex;
   align-items: center;
-  background-color: var(--color-bg-base);
-  border: 1px solid var(--color-border-interactive);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  height: 44px; /* Large touch target */
+  gap: 6px;
+  background: transparent;
+  border: none;
+  direction: ltr; /* Keep [-] [NUM] [+] consistent */
 }
 
 .stepper-btn {
-  width: 44px;
-  height: 44px;
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-text-primary);
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  background-color: var(--color-bg-base);
+  border: var(--border-structural-thick);
+  border-radius: var(--radius-ticket);
+  font-family: var(--font-family-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-ink-primary);
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--motion-duration-micro);
+  box-shadow: var(--shadow-stamp);
+  transition: background-color var(--motion-duration-micro), transform var(--motion-duration-micro);
 }
 
 .stepper-btn:hover {
-  background-color: var(--color-bg-cardSelected);
+  background-color: var(--color-bg-cardHover);
 }
 
 .stepper-btn:active {
-  background-color: var(--color-bg-cardPressed);
+  background-color: var(--color-ink-primary);
+  color: #FFFFFF;
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .stepper-input {
-  width: 60px;
-  height: 44px;
-  border: none;
-  background: transparent;
+  width: 64px;
+  height: 48px;
+  border: var(--border-structural);
+  border-radius: var(--radius-ticket);
+  background-color: var(--color-bg-surface);
   text-align: center;
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  color: var(--color-ink-primary);
+  padding: 0 4px;
+  -moz-appearance: textfield;
+}
+
+.stepper-input::-webkit-outer-spin-button,
+.stepper-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .stepper-input:focus {
-  outline: none;
-  background: var(--color-bg-surface);
+  outline: 2px solid var(--color-accent-cobalt);
+  outline-offset: 1px;
+  background: var(--color-accent-cobalt-tint);
 }
 
-/* ================= 4. BADGES ================= */
+/* ================= 4. BADGES & STAMPS (R23, R24) ================= */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   padding: 3px 8px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
+  border-radius: var(--radius-badge);
+  font-size: 12px; /* Minimum floor 12px (R23) */
+  font-weight: 700;
+  line-height: 1.2;
+  border: 1.5px solid var(--color-ink-primary);
+  white-space: nowrap;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  flex-shrink: 0;
 }
 
 .badge-success {
-  background-color: #dcfce7;
+  background-color: var(--status-success-bg);
   color: var(--status-success);
+  border-color: var(--status-success);
 }
 
 .badge-warning {
-  background-color: #fef3c7;
+  background-color: var(--status-warning-bg);
   color: var(--status-warning);
+  border-color: var(--status-warning);
 }
 
 .badge-danger {
-  background-color: #fee2e2;
+  background-color: var(--status-critical-bg);
   color: var(--status-critical);
+  border-color: var(--status-critical);
+}
+
+.badge-cobalt {
+  background-color: var(--color-accent-cobalt-tint);
+  color: var(--color-accent-cobalt);
+  border-color: var(--color-accent-cobalt);
+}
+
+.badge-unit {
+  background-color: var(--color-bg-base);
+  color: var(--color-ink-primary);
+  border: 1.5px solid var(--color-ink-primary);
+  padding: 2px 7px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-badge);
 }
 
 .badge-wine {
-  background-color: rgba(90, 24, 39, 0.1);
-  color: var(--color-accent-primary);
+  background-color: var(--color-bg-base);
+  color: var(--color-ink-primary);
+  border-color: var(--color-ink-primary);
 }
 
 .badge-gray {
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: var(--color-bg-base);
+  color: var(--color-ink-secondary);
+  border-color: var(--color-border-subtle);
 }
 
-/* ================= 5. FORM CONTROLS ================= */
+/* ================= 5. FORM CONTROLS (R44) ================= */
 .form-group {
   margin-bottom: var(--space-md);
   text-align: right;
@@ -202,37 +271,38 @@
 
 .form-label {
   display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink-primary);
   margin-bottom: 6px;
 }
 
 .form-input, .form-select, .form-textarea {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border-interactive);
-  border-radius: var(--radius-sm);
+  min-height: 48px;
+  padding: 10px 14px;
+  border: var(--border-structural);
+  border-radius: var(--radius-ticket);
   background-color: var(--color-bg-surface);
-  color: var(--color-text-primary);
+  color: var(--color-ink-primary);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 16px; /* Mobile input floor >= 16px prevents iOS zoom (R44) */
+  font-weight: 500;
   transition: border-color var(--motion-duration-micro);
 }
 
 .form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: var(--color-accent-primary);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(90, 24, 39, 0.1);
+  border-color: var(--color-accent-cobalt);
+  outline: 2px solid var(--color-accent-cobalt);
+  outline-offset: 1px;
 }
 
-/* ================= 6. FILTER PILLS ================= */
+/* ================= 6. FILTER PILLS (REQ-03, REQ-06, R20) ================= */
 .filter-bar {
   display: flex;
-  gap: var(--space-xs);
+  gap: 8px;
   overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: var(--space-md);
+  padding: 4px 0 8px 0;
   scrollbar-width: none;
 }
 
@@ -242,35 +312,44 @@
 
 .filter-pill {
   flex-shrink: 0;
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
+  min-height: 48px; /* Touch target >= 48dp (R20) */
+  padding: 8px 16px;
+  border-radius: var(--radius-ticket);
   background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
-  color: var(--color-text-secondary);
+  border: var(--border-structural);
+  color: var(--color-ink-primary);
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all var(--motion-duration-micro);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color var(--motion-duration-micro), color var(--motion-duration-micro), transform var(--motion-duration-micro);
 }
 
 .filter-pill:hover {
   background-color: var(--color-bg-cardHover);
 }
 
+.filter-pill:active {
+  transform: translate(1px, 1px);
+}
+
 .filter-pill.active {
-  background-color: #1e1e1e;
-  color: #ffffff;
-  border-color: #1e1e1e;
-  font-weight: 600;
+  background-color: var(--color-accent-cobalt);
+  color: #FFFFFF;
+  border: var(--border-structural);
+  box-shadow: var(--shadow-stamp);
 }
 
 /* ================= 7. DATA TABLES ================= */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
+  border: var(--border-structural);
+  border-radius: var(--radius-ticket);
   background: var(--color-bg-surface);
 }
 
@@ -278,112 +357,151 @@
   width: 100%;
   border-collapse: collapse;
   text-align: right;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .data-table th {
-  background-color: #1e1e1e;
-  color: #ffffff;
+  background-color: var(--color-ink-primary);
+  color: #FFFFFF;
   padding: 10px 14px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 }
 
 .data-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--color-border-subtle);
+  padding: 12px 14px;
+  border-bottom: var(--border-hairline);
   color: var(--color-text-primary);
-  white-space: nowrap;
 }
 
 .data-table tbody tr:hover {
   background-color: var(--color-bg-cardHover);
 }
 
-/* ================= 8. MODALS & BACKDROPS ================= */
+/* ================= 8. MODALS & BOTTOM SHEETS (REQ-08) ================= */
 .modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0,0.45);
+  background-color: rgba(15, 17, 21, 0.75);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   z-index: 200;
-  backdrop-filter: blur(2px);
-  padding: var(--space-md);
+  padding: 0;
 }
 
 .modal-box {
   background-color: var(--color-bg-surface);
-  border-radius: var(--radius-lg);
-  max-width: 540px;
+  border-top: 2px solid var(--color-ink-primary);
+  border-left: 2px solid var(--color-ink-primary);
+  border-right: 2px solid var(--color-ink-primary);
+  border-radius: var(--radius-sheet);
+  max-width: 560px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 86vh;
   overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
   display: flex;
   flex-direction: column;
+  animation: sheet-slide-up var(--motion-duration-component) var(--motion-easing-enter);
+}
+
+@keyframes sheet-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.sheet-drag-handle {
+  width: 48px;
+  height: 5px;
+  background-color: var(--color-ink-primary);
+  border-radius: 99px;
+  margin: 10px auto 4px auto;
+  flex-shrink: 0;
 }
 
 .modal-header {
-  padding: var(--space-md) var(--space-lg);
-  border-bottom: 1px solid var(--color-border-subtle);
+  padding: 12px 16px;
+  border-bottom: var(--border-structural);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .modal-body {
-  padding: var(--space-lg);
+  padding: 16px;
   flex: 1;
+  overflow-y: auto;
 }
 
 .modal-footer {
-  padding: var(--space-md) var(--space-lg);
-  border-top: 1px solid var(--color-border-subtle);
+  padding: 12px 16px;
+  border-top: var(--border-structural);
+  background-color: var(--color-bg-base);
   display: flex;
-  justify-content: flex-end;
+  justify-content: stretch;
   gap: var(--space-sm);
 }
 
-/* ================= 9. EMPTY & ERROR STATES ================= */
+/* ================= 9. EMPTY & ERROR STATES (R12, R39, R55) ================= */
 .empty-state {
   text-align: center;
-  padding: var(--space-xl) var(--space-md);
-  color: var(--color-text-dim);
+  padding: 32px 20px;
+  margin: 16px;
+  background-color: var(--color-bg-surface);
+  border: var(--border-structural);
+  border-radius: var(--radius-ticket);
+  color: var(--color-ink-secondary);
 }
 
 .empty-state-icon {
-  font-size: 40px;
-  margin-bottom: var(--space-sm);
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px auto;
+  border: var(--border-structural);
+  border-radius: var(--radius-ticket);
+  background-color: var(--color-bg-base);
+  color: var(--color-ink-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-state-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-ink-primary);
+  margin-bottom: 6px;
 }
 
 .empty-state-desc {
-  font-size: 13px;
-  color: var(--color-text-dim);
+  font-size: 14px;
+  color: var(--color-ink-secondary);
   max-width: 320px;
-  margin: 0 auto var(--space-md);
+  margin: 0 auto 16px auto;
+}
+
+.partial-error-banner {
+  margin: 12px 16px 0 16px;
+  padding: 12px 14px;
+  background-color: var(--status-warning-bg);
+  border: 1.5px solid var(--status-warning);
+  border-radius: var(--radius-ticket);
+  color: var(--color-ink-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* ================= 10. SKELETON LOADERS ================= */
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-wave 1.5s infinite;
-  border-radius: var(--radius-sm);
-}
-
-@keyframes skeleton-wave {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  background-color: #EDEDEA;
+  border: 1.5px solid var(--color-border-subtle);
+  border-radius: var(--radius-ticket);
 }

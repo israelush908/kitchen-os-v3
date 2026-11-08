@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Kitchen OS v3.0 — דיווח פחת מהיר</title>
+<!-- Google Fonts: Rubik & Space Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&amp;family=Space+Mono:wght@700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with Forms & Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-background": "#1a1c20",
+            "error": "#ba1a1a",
+            "outline-variant": "#e2bfb2",
+            "on-tertiary-fixed-variant": "#3e4755",
+            "secondary-container": "#4069f2",
+            "secondary-fixed-dim": "#b7c4ff",
+            "on-surface": "#1a1c20",
+            "outline": "#8e7166",
+            "surface": "#f9f9ff",
+            "on-secondary-fixed-variant": "#0039b5",
+            "on-error": "#ffffff",
+            "surface-variant": "#e2e2e8",
+            "primary-fixed": "#ffdbce",
+            "inverse-surface": "#2f3035",
+            "tertiary-fixed-dim": "#bdc7d8",
+            "surface-container-highest": "#e2e2e8",
+            "inverse-on-surface": "#f0f0f6",
+            "background": "#f9f9ff",
+            "on-primary-container": "#fffbff",
+            "on-primary": "#ffffff",
+            "primary": "#a33900",
+            "on-surface-variant": "#5a4138",
+            "surface-bright": "#f9f9ff",
+            "on-tertiary-fixed": "#121c28",
+            "on-secondary-container": "#fffbff",
+            "error-container": "#ffdad6",
+            "on-tertiary": "#ffffff",
+            "on-error-container": "#93000a",
+            "tertiary-container": "#6b7584",
+            "surface-container-lowest": "#ffffff",
+            "secondary": "#1d4ed8",
+            "on-tertiary-container": "#fdfcff",
+            "surface-container": "#ededf3",
+            "primary-fixed-dim": "#ffb599",
+            "tertiary-fixed": "#d9e3f4",
+            "surface-container-low": "#f3f3f9",
+            "surface-container-high": "#e8e8ed",
+            "on-primary-fixed-variant": "#7f2b00",
+            "secondary-fixed": "#dce1ff",
+            "tertiary": "#535d6b",
+            "inverse-primary": "#ffb599",
+            "surface-tint": "#a73a00",
+            "on-primary-fixed": "#370e00",
+            "primary-container": "#cc4900",
+            "surface-dim": "#d9d9df",
+            "on-secondary-fixed": "#001551",
+            "on-secondary": "#ffffff"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          spacing: {
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "space-md": "0.75rem",
+            "space-sm": "0.5rem",
+            "gutter": "0.75rem",
+            "space-xl": "1.5rem",
+            "margin": "1rem"
+          },
+          fontFamily: {
+            "body-md": ["Rubik", "sans-serif"],
+            "label-numeric-md": ["Space Mono", "monospace"],
+            "body-sm": ["Rubik", "sans-serif"],
+            "label-numeric-sm": ["Space Mono", "monospace"],
+            "headline-md": ["Rubik", "sans-serif"],
+            "headline-lg-mobile": ["Rubik", "sans-serif"],
+            "headline-lg": ["Rubik", "sans-serif"],
+            "label-caps": ["Rubik", "sans-serif"],
+            "label-numeric-lg": ["Space Mono", "monospace"],
+            "headline-sm": ["Rubik", "sans-serif"],
+            "body-lg": ["Rubik", "sans-serif"]
+          },
+          fontSize: {
+            "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "label-numeric-md": ["22px", { lineHeight: "26px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }],
+            "label-numeric-sm": ["14px", { lineHeight: "18px", fontWeight: "700" }],
+            "headline-md": ["20px", { lineHeight: "26px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "headline-lg-mobile": ["24px", { lineHeight: "30px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "headline-lg": ["30px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "label-caps": ["11px", { lineHeight: "14px", letterSpacing: "0.06em", fontWeight: "700" }],
+            "label-numeric-lg": ["26px", { lineHeight: "30px", letterSpacing: "-0.03em", fontWeight: "700" }],
+            "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "500" }],
+            "body-lg": ["16px", { lineHeight: "22px", fontWeight: "500" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Strict Kitchen Operational System styles */
+    body {
+      background-color: #F8F7F4;
+      color: #0F1115;
+      font-family: 'Rubik', sans-serif;
+      touch-action: manipulation;
+    }
+
+    .border-ink {
+      border: 1.5px solid #0F1115;
+    }
+
+    .border-divider {
+      border-color: #D6D3C9;
+    }
+
+    .stamp-active:active {
+      transform: translate(1px, 1px);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen bg-[#F8F7F4] text-[#0F1115] flex flex-col justify-between antialiased selection:bg-secondary selection:text-white">
+<!-- Mobile Wrapper targeting iPhone 15 dimensions (393px width reference) -->
+<div class="w-full max-w-[430px] mx-auto min-h-screen flex flex-col bg-[#F8F7F4] relative pb-20">
+<!-- TOP APP BAR (Shared Component Anchor) -->
+<header class="bg-surface-container-lowest sticky top-0 z-40 border-b-[1.5px] border-[#0F1115] w-full px-4 h-14 flex items-center justify-between">
+<!-- Trailing: Headline & Version Brand Anchor -->
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm font-bold tracking-tight text-[#0F1115]">Kitchen OS v3.0</span>
+<span class="border border-[#0F1115] bg-[#F8F7F4] text-[#4B5563] text-[10px] font-bold px-1 py-0.5 rounded leading-none">v3.0</span>
+</div>
+<!-- Center: Operational Ledger Segmented Pill -->
+<div aria-label="סביבת עבודה" class="flex items-center border-[1.5px] border-[#0F1115] rounded bg-[#F8F7F4] p-0.5" role="radiogroup">
+<button aria-checked="true" class="bg-[#0F1115] text-[#FFFFFF] font-label-caps text-label-caps px-2.5 py-1 rounded transition-colors" type="button">שטח</button>
+<button aria-checked="false" class="text-[#4B5563] hover:text-[#0F1115] font-label-caps text-label-caps px-2 py-1 rounded transition-colors" type="button">משרד</button>
+</div>
+<!-- Leading: Sync Status & Operational Tool -->
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1 bg-[#F8F7F4] border border-[#D6D3C9] px-2 py-1 rounded">
+<span class="w-2 h-2 rounded-full bg-[#15803D] inline-block animate-pulse"></span>
+<span class="text-[11px] font-semibold text-[#15803D]">מסונכרן</span>
+</div>
+<button aria-label="הגדרות" class="w-8 h-8 flex items-center justify-center text-[#0F1115] hover:bg-[#F8F7F4] rounded border border-[#D6D3C9] active:translate-x-[1px] active:translate-y-[1px]" type="button">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+</div>
+</header>
+<!-- MAIN OPERATIONAL FORM CANVAS -->
+<main class="flex-1 px-4 pt-4 pb-6 flex flex-col gap-4">
+<!-- Editorial Form Header -->
+<section class="border-b border-[#D6D3C9] pb-3">
+<div class="flex items-center justify-between mb-1">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-tight text-[#0F1115]">
+            דיווח פחת מהיר
+          </h1>
+<span class="inline-flex items-center gap-1 border border-[#0F1115] bg-[#FFFFFF] px-2 py-0.5 rounded text-[11px] font-bold text-[#EA580C]">
+<span class="material-symbols-outlined text-[14px]" data-icon="timer">timer</span>
+            5 שניות
+          </span>
+</div>
+<p class="font-body-md text-body-md text-[#4B5563]">
+          רישום ב-3 שלבים והפחתה אוטומטית מהמלאי
+        </p>
+</section>
+<!-- STEP 1: ITEM SELECTION -->
+<section aria-labelledby="step-1-title" class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-bold text-[#0F1115]" id="step-1-title">1. בחירת פריט</span>
+<span class="text-[11px] text-[#4B5563] font-medium font-body-sm text-body-sm">מקרר גבינות יין</span>
+</div>
+<button aria-haspopup="dialog" class="w-full min-h-[52px] h-14 bg-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] px-3.5 flex items-center justify-between hover:bg-[#F8F7F4] active:translate-x-[1px] active:translate-y-[1px] transition-all text-right group" type="button">
+<div class="flex items-center gap-2.5">
+<span class="w-8 h-8 rounded bg-[#F8F7F4] border border-[#D6D3C9] flex items-center justify-center text-[#0F1115]">
+<span class="material-symbols-outlined text-[18px]" data-icon="inventory_2">inventory_2</span>
+</span>
+<div class="flex flex-col text-right">
+<span class="font-body-lg text-body-lg font-bold text-[#0F1115]">צ'דר אנגלית מיושנת</span>
+<span class="text-[11px] text-[#4B5563]">אצוות יבוא #8842 • חיי מדף 3 ימים</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-numeric-sm text-label-numeric-sm text-[#0F1115] bg-[#F8F7F4] border border-[#D6D3C9] px-2 py-1 rounded">
+              ₪85.00 / ק״ג
+            </span>
+<span class="material-symbols-outlined text-[#0F1115] group-hover:-translate-x-0.5 transition-transform" data-icon="chevron_left">chevron_left</span>
+</div>
+</button>
+</section>
+<!-- STEP 2: QUANTITY STEPPER CONTROL -->
+<section aria-labelledby="step-2-title" class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-bold text-[#0F1115]" id="step-2-title">2. כמות שנפסלה</span>
+<span class="text-[11px] text-[#4B5563]">יחידת מידה: משקל נטו</span>
+</div>
+<!-- Tactile Mechanical Stepper -->
+<div class="grid grid-cols-12 gap-2 items-center">
+<!-- Minus Action Button (Right in RTL layout) -->
+<button aria-label="הפחת כמות" class="col-span-3 h-[52px] min-h-[48px] bg-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center text-[#0F1115] font-bold text-2xl active:scale-95 transition-transform select-none shadow-[2px_2px_0px_#0F1115]" id="btn-minus" type="button">
+            −
+          </button>
+<!-- Tabular Value Display Container -->
+<div class="col-span-6 h-[52px] bg-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center gap-1.5 px-2">
+<span class="font-label-numeric-lg text-label-numeric-lg font-bold text-[#0F1115]" id="quantity-display">0.5</span>
+<span class="font-body-lg text-body-lg font-bold text-[#4B5563]">ק״ג</span>
+</div>
+<!-- Plus Action Button (Left in RTL layout) -->
+<button aria-label="הוסף כמות" class="col-span-3 h-[52px] min-h-[48px] bg-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center text-[#0F1115] font-bold text-2xl active:scale-95 transition-transform select-none shadow-[2px_2px_0px_#0F1115]" id="btn-plus" type="button">
+            +
+          </button>
+</div>
+<!-- Quick Tap Increment Pills -->
+<div class="grid grid-cols-3 gap-2 mt-1">
+<button class="h-12 min-h-[48px] bg-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center gap-1 font-label-numeric-sm text-label-numeric-sm text-[#0F1115] active:translate-x-[1px] active:translate-y-[1px] hover:bg-[#F8F7F4] transition-all" onclick="setQuantity(0.25)" type="button">
+<span>+0.25</span>
+<span class="text-[11px] font-normal text-[#4B5563]">ק״ג</span>
+</button>
+<button class="h-12 min-h-[48px] bg-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center gap-1 font-label-numeric-sm text-label-numeric-sm text-[#0F1115] active:translate-x-[1px] active:translate-y-[1px] hover:bg-[#F8F7F4] transition-all" onclick="setQuantity(0.50)" type="button">
+<span>+0.50</span>
+<span class="text-[11px] font-normal text-[#4B5563]">ק״ג</span>
+</button>
+<button class="h-12 min-h-[48px] bg-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center gap-1 font-label-numeric-sm text-label-numeric-sm text-[#0F1115] active:translate-x-[1px] active:translate-y-[1px] hover:bg-[#F8F7F4] transition-all" onclick="setQuantity(1.00)" type="button">
+<span>+1.00</span>
+<span class="text-[11px] font-normal text-[#4B5563]">ק״ג</span>
+</button>
+</div>
+</section>
+<!-- STEP 3: WASTE REASON CHIPS -->
+<section aria-labelledby="step-3-title" class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-bold text-[#0F1115]" id="step-3-title">3. סיבת הפחת</span>
+<span class="text-[11px] text-[#4B5563]">סיווג נזק מטבחי</span>
+</div>
+<div aria-label="סיבת הפחת" class="grid grid-cols-2 gap-2" role="radiogroup">
+<!-- Active Chip (Apron Cobalt) -->
+<button aria-checked="true" class="h-12 min-h-[48px] bg-[#1D4ED8] text-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center px-3 font-body-md text-body-md font-bold shadow-[2px_2px_0px_#0F1115] transition-all" role="radio" type="button">
+            פג תוקף / קלקול
+          </button>
+<!-- Inactive Chips -->
+<button aria-checked="false" class="h-12 min-h-[48px] bg-[#FFFFFF] text-[#0F1115] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center px-3 font-body-md text-body-md font-medium hover:bg-[#F8F7F4] active:scale-95 transition-all" role="radio" type="button">
+            שגיאת הכנה
+          </button>
+<button aria-checked="false" class="h-12 min-h-[48px] bg-[#FFFFFF] text-[#0F1115] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center px-3 font-body-md text-body-md font-medium hover:bg-[#F8F7F4] active:scale-95 transition-all" role="radio" type="button">
+            נפילה / שבירה
+          </button>
+<button aria-checked="false" class="h-12 min-h-[48px] bg-[#FFFFFF] text-[#0F1115] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center px-3 font-body-md text-body-md font-medium hover:bg-[#F8F7F4] active:scale-95 transition-all" role="radio" type="button">
+            החזרת לקוח
+          </button>
+</div>
+</section>
+<!-- LIVE FINANCIAL IMPACT TICKET (RECEIPT STRIP) -->
+<section aria-live="polite" class="bg-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] overflow-hidden">
+<!-- Receipt Top Header -->
+<div class="bg-[#F8F7F4] border-b border-[#0F1115] px-3.5 py-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-[#4B5563]" data-icon="receipt_long">receipt_long</span>
+<span class="text-[11px] font-bold text-[#4B5563] tracking-wide">דוח השפעה כספית ומלאי</span>
+</div>
+<span class="text-[11px] text-[#4B5563] font-mono">14:32 // תחנה 4</span>
+</div>
+<!-- Receipt Body -->
+<div class="p-3.5 flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<span class="font-body-md text-body-md font-medium text-[#4B5563]">עלות הפחת המחושבת:</span>
+<div class="flex items-baseline gap-1">
+<span class="font-label-numeric-lg text-label-numeric-lg font-bold text-[#B91C1C]" id="cost-display">₪42.50</span>
+</div>
+</div>
+<div class="border-t border-dashed border-[#D6D3C9] pt-2 flex items-center justify-between text-xs">
+<span class="text-[#4B5563] flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#EA580C]"></span>
+              יתרת מלאי מעודכנת לאחר פחת:
+            </span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-[#0F1115]" id="stock-remaining">2.50 ק״ג</span>
+</div>
+</div>
+</section>
+<!-- PRIMARY CTA ACTION BUTTON -->
+<div class="pt-1">
+<button class="w-full h-[52px] min-h-[48px] bg-[#EA580C] hover:bg-[#cc4900] text-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center gap-2 font-body-lg text-body-lg font-bold shadow-[2px_2px_0px_#0F1115] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all" id="submit-waste-btn" type="button">
+<span class="material-symbols-outlined text-[22px]" data-icon="check_circle">check_circle</span>
+<span>אשר דיווח פחת (₪42.50)</span>
+</button>
+</div>
+</main>
+<!-- BOTTOM NAVIGATION BAR (Shared Component Anchor) -->
+<!-- 4 Tabs with mirrored order for RTL: מלאי, הכנות, ספירה, יומן (Active for waste log) -->
+<nav aria-label="ניווט ראשי" class="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto z-50 bg-surface-container-lowest border-t-[1.5px] border-[#0F1115] flex justify-around items-center px-margin py-space-xs">
+<!-- Tab 1: מלאי (Inventory) -->
+<button aria-current="false" class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-caps font-label-caps mt-0.5">מלאי</span>
+</button>
+<!-- Tab 2: הכנות (Prep) -->
+<button aria-current="false" class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="skillet">skillet</span>
+<span class="text-label-caps font-label-caps mt-0.5">הכנות</span>
+</button>
+<!-- Tab 3: ספירה (Count) -->
+<button aria-current="false" class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_list_numbered_rtl">format_list_numbered_rtl</span>
+<span class="text-label-caps font-label-caps mt-0.5">ספירה</span>
+</button>
+<!-- Tab 4: יומן / דיווח פחת (Log / Field Waste - Active Intent) -->
+<button aria-current="page" class="flex flex-col items-center justify-center bg-secondary text-on-secondary rounded px-3 py-1.5 border border-on-surface active:scale-95 duration-75" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="menu_book">menu_book</span>
+<span class="text-label-caps font-label-caps mt-0.5">יומן</span>
+</button>
+</nav>
+</div>
+<!-- Micro-Interactions Script for Operational Ledger -->
+<script>
+    const UNIT_PRICE = 85.00;
+    const INITIAL_STOCK = 3.00;
+    let currentQty = 0.50;
+
+    const qtyDisplay = document.getElementById('quantity-display');
+    const costDisplay = document.getElementById('cost-display');
+    const stockRemaining = document.getElementById('stock-remaining');
+    const submitBtn = document.getElementById('submit-waste-btn');
+
+    function updateFinancialImpact() {
+      qtyDisplay.textContent = currentQty.toFixed(2).replace(/\.?0+$/, '');
+      if (qtyDisplay.textContent === '') qtyDisplay.textContent = '0';
+      
+      const totalCost = (currentQty * UNIT_PRICE).toFixed(2);
+      costDisplay.textContent = `₪${totalCost}`;
+      
+      const remaining = Math.max(0, INITIAL_STOCK - currentQty).toFixed(2);
+      stockRemaining.textContent = `${remaining} ק״ג`;
+
+      submitBtn.querySelector('span:last-child').textContent = `אשר דיווח פחת (₪${totalCost})`;
+    }
+
+    document.getElementById('btn-plus').addEventListener('click', () => {
+      currentQty = Math.round((currentQty + 0.10) * 100) / 100;
+      updateFinancialImpact();
+    });
+
+    document.getElementById('btn-minus').addEventListener('click', () => {
+      if (currentQty > 0.10) {
+        currentQty = Math.round((currentQty - 0.10) * 100) / 100;
+        updateFinancialImpact();
+      }
+    });
+
+    function setQuantity(val) {
+      currentQty = Math.round((currentQty + val) * 100) / 100;
+      updateFinancialImpact();
+    }
+
+    // Reason chips selection handling
+    const reasonButtons = document.querySelectorAll('[role="radio"]');
+    reasonButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        reasonButtons.forEach(b => {
+          b.setAttribute('aria-checked', 'false');
+          b.className = 'h-12 min-h-[48px] bg-[#FFFFFF] text-[#0F1115] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center px-3 font-body-md text-body-md font-medium hover:bg-[#F8F7F4] active:scale-95 transition-all';
+        });
+        btn.setAttribute('aria-checked', 'true');
+        btn.className = 'h-12 min-h-[48px] bg-[#1D4ED8] text-[#FFFFFF] border-[1.5px] border-[#0F1115] rounded-[6px] flex items-center justify-center px-3 font-body-md text-body-md font-bold shadow-[2px_2px_0px_#0F1115] transition-all';
+      });
+    });
+
+    // Confirmation Toast micro-action
+    submitBtn.addEventListener('click', () => {
+      submitBtn.classList.add('bg-[#15803D]');
+      submitBtn.innerHTML = `
+        <span class="material-symbols-outlined text-[22px]" data-icon="task_alt">task_alt</span>
+        <span>נרשם בהצלחה והופחת מהמלאי</span>
+      `;
+      setTimeout(() => {
+        submitBtn.classList.remove('bg-[#15803D]');
+        updateFinancialImpact();
+        submitBtn.innerHTML = `
+          <span class="material-symbols-outlined text-[22px]" data-icon="check_circle">check_circle</span>
+          <span>אשר דיווח פחת (₪${(currentQty * UNIT_PRICE).toFixed(2)})</span>
+        `;
+      }, 1800);
+    });
+  </script>
+</body></html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Prep Recipe &amp; BOM - Kitchen OS v3.0</title>
+<!-- Google Fonts: Rubik & Space Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,700;1,400&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-container": "#fdfcff",
+            "on-tertiary-fixed": "#121c28",
+            "secondary": "#1d4ed8",
+            "on-tertiary-fixed-variant": "#3e4755",
+            "tertiary-fixed": "#d9e3f4",
+            "on-error-container": "#93000a",
+            "outline": "#8e7166",
+            "inverse-surface": "#2f3035",
+            "on-secondary-container": "#fffbff",
+            "tertiary-container": "#6b7584",
+            "surface-variant": "#e2e2e8",
+            "background": "#f9f9ff",
+            "surface-dim": "#d9d9df",
+            "surface": "#f9f9ff",
+            "on-primary": "#ffffff",
+            "surface-container-highest": "#e2e2e8",
+            "on-tertiary": "#ffffff",
+            "tertiary": "#535d6b",
+            "surface-tint": "#a73a00",
+            "secondary-fixed-dim": "#b7c4ff",
+            "outline-variant": "#e2bfb2",
+            "secondary-container": "#4069f2",
+            "on-primary-container": "#fffbff",
+            "error": "#ba1a1a",
+            "surface-container-low": "#f3f3f9",
+            "on-secondary-fixed": "#001551",
+            "on-surface": "#1a1c20",
+            "primary": "#a33900",
+            "on-secondary": "#ffffff",
+            "primary-container": "#cc4900",
+            "on-secondary-fixed-variant": "#0039b5",
+            "surface-container-high": "#e8e8ed",
+            "on-background": "#1a1c20",
+            "on-primary-fixed-variant": "#7f2b00",
+            "surface-bright": "#f9f9ff",
+            "on-error": "#ffffff",
+            "inverse-primary": "#ffb599",
+            "secondary-fixed": "#dce1ff",
+            "primary-fixed-dim": "#ffb599",
+            "tertiary-fixed-dim": "#bdc7d8",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#ededf3",
+            "inverse-on-surface": "#f0f0f6",
+            "on-primary-fixed": "#370e00",
+            "primary-fixed": "#ffdbce",
+            "error-container": "#ffdad6",
+            "on-surface-variant": "#5a4138"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xl": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "gutter": "0.75rem",
+            "margin": "1rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Rubik"],
+            "label-numeric-lg": ["Space Mono"],
+            "headline-sm": ["Rubik"],
+            "headline-lg-mobile": ["Rubik"],
+            "headline-lg": ["Rubik"],
+            "label-numeric-sm": ["Space Mono"],
+            "headline-md": ["Rubik"],
+            "label-numeric-md": ["Space Mono"],
+            "label-caps": ["Rubik"],
+            "body-md": ["Rubik"],
+            "body-sm": ["Rubik"]
+          },
+          "fontSize": {
+            "body-lg": ["16px", { "lineHeight": "22px", "fontWeight": "500" }],
+            "label-numeric-lg": ["26px", { "lineHeight": "30px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "headline-lg": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-numeric-sm": ["14px", { "lineHeight": "18px", "fontWeight": "700" }],
+            "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-numeric-md": ["22px", { "lineHeight": "26px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    body {
+      background-color: #F8F7F4;
+      color: #0F1115;
+      font-family: 'Rubik', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #D6D3C9;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#F8F7F4] text-[#0F1115] min-h-screen flex justify-center items-center p-0 m-0">
+<!-- Mobile Viewport Canvas: 393 x 852 (iPhone 15 Standard) -->
+<div class="relative w-full max-w-[393px] h-[852px] bg-[#F8F7F4] overflow-hidden flex flex-col border-[1.5px] border-[#0F1115] shadow-2xl">
+<!-- 1. Dimmed Top Backdrop (top ~16% of screen) -->
+<div class="relative h-[128px] w-full bg-[#1A1C20] px-margin pt-3 flex flex-col justify-start select-none">
+<!-- Underlying Station Header Content (Darkened Preview) -->
+<div class="opacity-60 flex items-center justify-between text-[#FFFFFF] text-xs font-mono mb-2">
+<span class="tracking-wider">STATION: PREP-STN-02#</span>
+<span class="border border-[#4B5563] px-1.5 py-0.5 rounded-[2px] text-[10px]">משמרת בוקר 07:00</span>
+</div>
+<div class="opacity-40 flex items-center justify-between text-[#FFFFFF]">
+<div class="font-headline-sm text-headline-sm">רשימת הכנות יומית (Prep Queue)</div>
+<div class="font-label-numeric-sm text-label-numeric-sm font-bold">14 / 18</div>
+</div>
+<!-- Scrim Overlay -->
+<div class="absolute inset-0 bg-[#0F1115]/75 pointer-events-none"></div>
+</div>
+<!-- 2. Editorial Bottom Sheet Container (occupies lower ~84% of viewport) -->
+<div class="relative flex-1 bg-[#FFFFFF] rounded-t-xl border-t-[2px] border-[#0F1115] flex flex-col overflow-hidden -mt-4 shadow-[0_-8px_20px_rgba(15,17,21,0.25)]">
+<!-- Drag Handle -->
+<div class="w-full flex justify-center pt-2 pb-1 bg-[#FFFFFF]">
+<div class="w-10 h-1 bg-[#D6D3C9] rounded-full"></div>
+</div>
+<!-- Sheet Header Bar -->
+<div class="px-margin pt-1 pb-2 flex items-center justify-between border-b border-[#0F1115] bg-[#FFFFFF]">
+<div class="flex flex-col">
+<span class="text-label-caps font-label-caps text-[#4B5563]">כרטיס הכנה פס / מתכון תקן</span>
+<h1 class="font-headline-md text-headline-md text-[#0F1115] font-bold tracking-tight">
+            מתכון הכנה · מטבל טחינה ירוקה
+          </h1>
+</div>
+<!-- 48x48 Accessible Close Button -->
+<button aria-label="סגור מתכון" class="w-12 h-12 flex items-center justify-center border border-[#0F1115] rounded-[4px] bg-[#FFFFFF] hover:bg-[#F8F7F4] active:translate-x-[1px] active:translate-y-[1px] transition-all" type="button">
+<span class="material-symbols-outlined text-[#0F1115] text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<!-- Metadata Stamp / Ticket Specs Row -->
+<div class="bg-[#F8F7F4] border-b border-[#D6D3C9] py-2.5 px-margin grid grid-cols-3 divide-x divide-x-reverse divide-[#D6D3C9] text-center">
+<div class="flex flex-col items-center justify-center px-1">
+<span class="text-label-caps font-label-caps text-[#4B5563] leading-none mb-1">תפוקת אצווה</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-[#0F1115]">2.5 ק״ג</span>
+</div>
+<div class="flex flex-col items-center justify-center px-1">
+<span class="text-label-caps font-label-caps text-[#4B5563] leading-none mb-1">זמן ביצוע</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-[#0F1115]">15 דק׳</span>
+</div>
+<div class="flex flex-col items-center justify-center px-1">
+<span class="text-label-caps font-label-caps text-[#4B5563] leading-none mb-1">עמדת ייצור</span>
+<span class="font-body-sm text-body-sm font-bold text-[#0F1115] truncate max-w-full">פלטות וגבינות</span>
+</div>
+</div>
+<!-- Scrollable Sheet Content: Ingredients BOM & Steps -->
+<div class="flex-1 overflow-y-auto custom-scrollbar px-margin py-3 space-y-4 bg-[#FFFFFF]">
+<!-- 3. Ingredients Ledger Table (BOM) -->
+<section aria-labelledby="bom-section-title">
+<div class="flex items-center justify-between pb-1.5 border-b-2 border-[#0F1115]">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[#0F1115] text-[18px]" data-icon="kitchen">kitchen</span>
+<h2 class="font-headline-sm text-headline-sm text-[#0F1115] font-bold" id="bom-section-title">
+                מרכיבים מדויקים (BOM)
+              </h2>
+</div>
+<!-- Batch scale indicator badge -->
+<span class="inline-flex items-center gap-1 px-2 py-0.5 border border-[#0F1115] bg-[#FFFFFF] rounded-[2px] font-label-numeric-sm text-label-numeric-sm text-[#0F1115]">
+<span>סולם 1.0×</span>
+</span>
+</div>
+<div class="divide-y divide-[#D6D3C9] border-b border-[#0F1115]">
+<!-- Row 1 -->
+<div class="min-h-[48px] py-2 flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-6 bg-[#0F1115] shrink-0"></span>
+<span class="font-body-lg text-body-lg text-[#0F1115] font-medium">טחינה גולמית הר ברכה</span>
+</div>
+<div class="font-label-numeric-md text-label-numeric-md text-[#0F1115] whitespace-nowrap text-left dir-ltr">
+                1.20 <span class="text-sm font-body-sm text-[#4B5563]">ק״ג</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="min-h-[48px] py-2 flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-6 bg-[#D6D3C9] shrink-0"></span>
+<span class="font-body-lg text-body-lg text-[#0F1115] font-medium">מים קרים מאוד (קרח)</span>
+</div>
+<div class="font-label-numeric-md text-label-numeric-md text-[#0F1115] whitespace-nowrap text-left dir-ltr">
+                1.00 <span class="text-sm font-body-sm text-[#4B5563]">ליטר</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="min-h-[48px] py-2 flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-6 bg-[#D6D3C9] shrink-0"></span>
+<span class="font-body-lg text-body-lg text-[#0F1115] font-medium">פטרוזיליה וכוסברה קצוצה</span>
+</div>
+<div class="font-label-numeric-md text-label-numeric-md text-[#0F1115] whitespace-nowrap text-left dir-ltr">
+                0.15 <span class="text-sm font-body-sm text-[#4B5563]">ק״ג</span>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="min-h-[48px] py-2 flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-6 bg-[#D6D3C9] shrink-0"></span>
+<span class="font-body-lg text-body-lg text-[#0F1115] font-medium">מיץ לימון סחוט טרי</span>
+</div>
+<div class="font-label-numeric-md text-label-numeric-md text-[#0F1115] whitespace-nowrap text-left dir-ltr">
+                0.12 <span class="text-sm font-body-sm text-[#4B5563]">ליטר</span>
+</div>
+</div>
+<!-- Row 5 -->
+<div class="min-h-[48px] py-2 flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-6 bg-[#D6D3C9] shrink-0"></span>
+<span class="font-body-lg text-body-lg text-[#0F1115] font-medium">מלח ים אטלנטי ושום כתוש</span>
+</div>
+<div class="font-label-numeric-md text-label-numeric-md text-[#0F1115] whitespace-nowrap text-left dir-ltr">
+                0.03 <span class="text-sm font-body-sm text-[#4B5563]">ק״ג</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Preparation Steps Block -->
+<section aria-labelledby="steps-section-title" class="pt-1">
+<div class="flex items-center gap-1.5 pb-2 border-b border-[#0F1115] mb-2.5">
+<span class="material-symbols-outlined text-[#0F1115] text-[18px]" data-icon="skillet">skillet</span>
+<h2 class="font-headline-sm text-headline-sm text-[#0F1115] font-bold" id="steps-section-title">
+              הוראות הכנה
+            </h2>
+</div>
+<div class="space-y-3">
+<!-- Step 1 -->
+<div class="flex items-start gap-3 p-2 bg-[#F8F7F4] border border-[#D6D3C9] rounded-[4px]">
+<div class="w-7 h-7 shrink-0 bg-[#0F1115] text-[#FFFFFF] font-label-numeric-sm text-label-numeric-sm rounded-[2px] flex items-center justify-center">
+                1
+              </div>
+<p class="font-body-lg text-body-lg text-[#0F1115] leading-snug">
+                טוחנים במעבד מזון את עשבי התיבול, השום, המלח ומיץ הלימון למחית חלקה.
+              </p>
+</div>
+<!-- Step 2 -->
+<div class="flex items-start gap-3 p-2 bg-[#F8F7F4] border border-[#D6D3C9] rounded-[4px]">
+<div class="w-7 h-7 shrink-0 bg-[#0F1115] text-[#FFFFFF] font-label-numeric-sm text-label-numeric-sm rounded-[2px] flex items-center justify-center">
+                2
+              </div>
+<p class="font-body-lg text-body-lg text-[#0F1115] leading-snug">
+                מוסיפים את הטחינה הגולמית ומזלפים מים קרים בהדרגה תוך ערבול עד למרקם קרמי יציב.
+              </p>
+</div>
+<!-- Step 3 -->
+<div class="flex items-start gap-3 p-2 bg-[#F8F7F4] border border-[#D6D3C9] rounded-[4px]">
+<div class="w-7 h-7 shrink-0 bg-[#0F1115] text-[#FFFFFF] font-label-numeric-sm text-label-numeric-sm rounded-[2px] flex items-center justify-center">
+                3
+              </div>
+<p class="font-body-lg text-body-lg text-[#0F1115] leading-snug">
+                מעבירים ל-2 קופסאות גסטרונום 1/6, מדביקים מדבקת תאריך ומכניסים למקרר פס.
+              </p>
+</div>
+</div>
+</section>
+</div>
+<!-- 5. Sticky Bottom Action CTA -->
+<div class="border-t-[1.5px] border-[#0F1115] p-margin bg-[#FFFFFF] shrink-0">
+<button class="w-full h-[52px] min-h-[48px] bg-[#EA580C] text-[#FFFFFF] font-headline-sm text-headline-sm font-bold rounded-[6px] border-[1.5px] border-[#0F1115] active:translate-x-[1px] active:translate-y-[1px] transition-all flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-[#FFFFFF] text-[22px]" data-icon="check_circle">check_circle</span>
+<span>סמן הכנה כהושלמה</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>
